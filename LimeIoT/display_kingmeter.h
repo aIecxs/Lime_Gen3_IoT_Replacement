@@ -183,7 +183,7 @@ typedef struct
     uint8_t         RxState;
     uint32_t        LastRx;
 
-    uint8_t         RxBuff[KM_MAX_RXBUFF];
+    uint8_t         RxBuff[KM_MAX_TXBUFF];
     uint8_t         RxCnt;
 
     RX_SETTINGS_t   Settings;

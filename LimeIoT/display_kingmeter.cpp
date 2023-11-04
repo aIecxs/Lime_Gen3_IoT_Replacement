@@ -74,7 +74,7 @@ void KingMeter_Init (KINGMETER_t* KM_ctx, HardwareSerial* DisplaySerial)
     KM_ctx->RxState                         = RXSTATE_STARTCODE;
     KM_ctx->LastRx                          = millis();
 
-    for(i=0; i<KM_MAX_RXBUFF; i++)
+    for(i=0; i<KM_MAX_TXBUFF; i++)
     {
         KM_ctx->RxBuff[i]                   = 0x00;
     }
@@ -253,7 +253,7 @@ static void KM_618U_Service(KINGMETER_t* KM_ctx)
                 CheckSum = 0x00;
                 for(i=1; i<7; i++)
                 {
-                    CheckSum = CheckSum ^ KM_ctx->RxBuff[i];            // Calculate XOR CheckSum
+                    CheckSum ^= KM_ctx->RxBuff[i];                      // Calculate XOR CheckSum
                 }
 
                 // Verify XOR CheckSum
@@ -365,7 +365,7 @@ static void KM_901U_Service(KINGMETER_t* KM_ctx)
                 TxBuff[13] =   KM_ctx->Settings.WheelSize_mm              & 0xFF;       // Unit: 1mm
                 TxBuff[14] =  (KM_ctx->Settings.WheelSize_mm        >> 8) & 0xFF;
 
-                TxBuff[15] =   KM_ctx->RxBuff[15];                      // Handshake
+                TxBuff[15] = random(0, sizeof(KM_901U_HANDSHAKE)-1);                    // Handshake
 
                 TxCnt = 16;
                 break;
@@ -488,15 +488,13 @@ static void KM_901U_Service(KINGMETER_t* KM_ctx)
             case 0x53:      // Settings mode
    
                 // Decode Rx message with handshake code
-                if (KM_ctx->RxBuff[5] == KM_901U_HANDSHAKE[KM_ctx->RxBuff[15]])
+                if (KM_ctx->RxBuff[5] == KM_901U_HANDSHAKE[TxBuff[15]])
                 {
                     Serial.println("OK: Handshake true");
-                    KM_ctx->RxBuff[15] = random(0, sizeof(KM_901U_HANDSHAKE));
                 }
                 else
                 {
                     Serial.println("Error: Invalid Handshake");
-                    KM_ctx->RxBuff[15] = random(0, sizeof(KM_901U_HANDSHAKE));
                 }
                 break;
 

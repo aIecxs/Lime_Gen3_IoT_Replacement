@@ -1,3 +1,4 @@
+// ***** MODIFIED VERSION ***** //
 /*
 Library for King-Meter displays
 
@@ -24,7 +25,24 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 // Includes
-#include "config.h"
+#include <Arduino.h>
+#include <stdint.h>
+
+#define HARDWARE_REV 22      //place your hardware revision here: 1-5 means hardware-revision 1.x, 2x means 2.x
+
+#define DISPLAY_TYPE_KINGMETER_618U (1<<4)                  // King-Meter 618U protocol (KM5s, EBS-LCD2, J-LCD, SW-LCD)
+#define DISPLAY_TYPE_KINGMETER_901U (1<<8)                  // King-Meter 901U protocol (KM5s)
+#define DISPLAY_TYPE_KINGMETER      (DISPLAY_TYPE_KINGMETER_618U|DISPLAY_TYPE_KINGMETER_901U)
+
+#define DISPLAY_TYPE DISPLAY_TYPE_KINGMETER_901U            // Set your display type here. CHANGES ONLY HERE!<-----------------------------
+
+//Config Options-----------------------------------------------------------------------------------------------------
+const int pas_tolerance=1;               //0... increase to make pas sensor slower but more tolerant against speed changes
+const float vcutoff=33.0;                //cutoff voltage in V;
+const float wheel_circumference = 2.075; //wheel circumference in m
+const byte wheel_magnets=1;              //configure your number of wheel magnets here
+const int spd_max1=22;                   //speed cutoff start in Km/h
+
 
 #if (DISPLAY_TYPE & DISPLAY_TYPE_KINGMETER)
 
@@ -50,8 +68,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define KM_PASDIR_FORWARD       0x00
 #define KM_PASDIR_BACKWARD      0x01
 
-#define KM_HND_HL_NO            0x00    
-#define KM_HND_HL_YES           0x01    
+#define KM_HND_HL_NO            0x00
+#define KM_HND_HL_YES           0x01
 
 #define KM_HND_HF_NO            0x00
 #define KM_HND_HF_YES           0x01
@@ -186,6 +204,8 @@ void KingMeter_Init (KINGMETER_t* KM_ctx, HardwareSerial* DisplaySerial);
 
 void KingMeter_Service(KINGMETER_t* KM_ctx);
 
+void hearthBeatEBiCS(KINGMETER_t* KM_ctx);
 
-#endif // KINGMETER_H
+
 #endif // (DISPLAY_TYPE & DISPLAY_TYPE_KINGMETER)
+#endif // KINGMETER_H

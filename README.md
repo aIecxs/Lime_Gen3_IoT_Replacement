@@ -66,7 +66,7 @@ The command sent by the controller to the IoT consists of 42 bytes. The 9th byte
 | Byte number | Meaning |
 |--|--|
 | 9 | Speed |
-| 20 | Batttery |
+| 20 | Battery |
 | last two bytes | CRC-16/XMODEM checksum |
 
 #### Example: `46 58 0C FF 00 22 11 00 00 40 00 00 41 3F 60 42 00 FF 44 64 52 00 61 F1 80 00 00 72 01 5C 01 59 82 00 00 00 00 E0 00 00 0A B3`

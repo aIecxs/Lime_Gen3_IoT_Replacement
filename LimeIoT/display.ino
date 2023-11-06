@@ -11,7 +11,7 @@ const uint8_t crc_check = 0xc1;
 const uint8_t crc_residue = 0x00;
 
 void sendDisplayCommand(int speed, byte battery, String status) {
-  speed = (speed / 50.0) * 500.0;
+  speed *= 10;
   String SPEED_HEX = String(speed, HEX);
 
   // Add leading zeros to speed if necessary

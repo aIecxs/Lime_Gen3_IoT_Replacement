@@ -34,7 +34,7 @@ void sendDisplayCommand(int speed, byte battery, String status) {
   }
 
   // Generate checksum
-  uint8_t crc_value = crc8(input_bytes, input_len / 2, crc_poly, crc_init, crc_xorout, crc_refin, crc_refout);
+  uint8_t crc_value = calcCRC8(input_bytes, input_len / 2, crc_poly, crc_init, crc_xorout, crc_refin, crc_refout);
 
   // Concatenate input hex string and CRC8 checksum
   String output_str = input_str + String(crc_value, HEX);
@@ -53,7 +53,7 @@ void sendDisplayLED(LEDbyteOffset offset, LEDstate state) {
   for (int i = 0; i < input_len; i += 2) {
     input_bytes[i / 2] = strtoul(input_str.substring(i, i + 2).c_str(), NULL, 16);
   }
-  uint8_t crc_value = crc8(input_bytes, input_len / 2, crc_poly, crc_init, crc_xorout, crc_refin, crc_refout);
+  uint8_t crc_value = calcCRC8(input_bytes, input_len / 2, crc_poly, crc_init, crc_xorout, crc_refin, crc_refout);
   String output_str = input_str + String(crc_value, HEX);
   for (int i = 0; i < output_str.length(); i += 2) {
     uint8_t byte = strtoul(output_str.substring(i, i + 2).c_str(), NULL, 16);

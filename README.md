@@ -3,14 +3,14 @@
 
 ![cover](https://raw.githubusercontent.com/A-Emile/Lime_Gen3_IoT_Replacement/main/iot_original.png)
 
-The goal of this project is to replace the IoT of the Lime Gen 3 with a custom one, so we can controll it with our own app.
+The goal of this project is to replace the IoT of the Lime Gen 3 with a custom one, so we can control it with our own app.
 If you find out more about the communication, please submit it here.
 
 ## How it works
 The IoT module gets replaced with an ESP32 microcontroller to enable us to control the scooter with our app. The app communicates with the ESP32 using Bluetooth Low Energy (BLE). The ESP32 replaces the function of the original IoT while also providing real-time feedback on speed, battery level, and other information.
 
 ## Installation
-Install the ESP32 add-on for Arduino IDE if you doesnt have already. [Here is a tutorial](https://randomnerdtutorials.com/installing-the-esp32-board-in-arduino-ide-windows-instructions/)
+Install the ESP32 add-on for Arduino IDE if you doesnt have already. [Here is a tutorial](https://randomnerdtutorials.com/installing-the-esp32-board-in-arduino-ide-windows-instructions/). The Sketch is created with Arduino 1.8.19 for board platform esp32 by Espressif Systems version 2.0.13. Downgrade version to avoid exceeding of program storage space. Maximum is 1310720 bytes.
 
 Install the [crc](https://github.com/RobTillaart/CRC) library by robtillaart from the library manager.
 
@@ -66,7 +66,7 @@ The command sent by the controller to the IoT consists of 42 bytes. The 9th byte
 | Byte number | Meaning |
 |--|--|
 | 9 | Speed |
-| 20 | Battery |
+| 20 | Batttery |
 | last two bytes | CRC-16/XMODEM checksum |
 
 #### Example: `46 58 0C FF 00 22 11 00 00 40 00 00 41 3F 60 42 00 FF 44 64 52 00 61 F1 80 00 00 72 01 5C 01 59 82 00 00 00 00 E0 00 00 0A B3`

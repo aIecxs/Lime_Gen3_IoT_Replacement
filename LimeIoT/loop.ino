@@ -69,8 +69,8 @@ void loop() {
   }
 
   unsigned long currMillis = millis();
-  byte txByte[] = { isUnlocked, unlockForEver, speed, battery, throttle, lightIsOn, controllerIsOn, isCharging, alarmIsOn };
-  byte settingsByte[] = { max_speed, alarm_delay, alarm_freq, alarm_reps };
+  byte txByte[] = { isUnlocked, unlockForEver, (byte)speed, battery, throttle, lightIsOn, controllerIsOn, isCharging, alarmIsOn };
+  byte settingsByte[] = { (byte)max_speed, (byte)alarm_delay, (byte)alarm_freq, (byte)alarm_reps };
 
   if (currMillis - prevMillis >= linterval) {
     prevMillis = currMillis;  // update prevMillis with current time

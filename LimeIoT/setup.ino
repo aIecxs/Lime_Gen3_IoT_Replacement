@@ -18,9 +18,11 @@ void setup() {
   digitalWrite(LOCK_PIN, LOW);
   controllerIsOn = 0;
 
-  // Display LOW = on, HIGH = off
+  // Display LOW = off, HIGH = on for npn transistor
+  // Display LOW = on, HIGH = off for pnp transistor
   pinMode(DISPLAY_PIN, OUTPUT);
-  digitalWrite(DISPLAY_PIN, LOW);
+//  digitalWrite(DISPLAY_PIN, LOW);
+  digitalWrite(DISPLAY_PIN, HIGH);
 //  gpio_hold_en(DISPLAY_PIN);
 /*
   //Setup sleep wakeup on Touch Pad 3 ( GPIO15 )
@@ -29,12 +31,14 @@ void setup() {
   esp_sleep_enable_ext0_wakeup(GPIO_NUM_14,1);
 */
   // wake on shock sensor
-  pinMode(SHOCK_PIN, INPUT_PULLDOWN);
+  adcAttachPin(SHOCK_PIN);
+//  pinMode(SHOCK_PIN, INPUT_PULLDOWN);
 //  rtc_gpio_deinit(SHOCK_PIN);
 //  rtc_gpio_pulldown_en(SHOCK_PIN);
 
   // wake on charger
-  pinMode(BOOT_PIN, INPUT);
+  adcAttachPin(BOOT_PIN);
+//  pinMode(BOOT_PIN, INPUT);
 
   // SHOCK_PIN | BOOT_PIN
 //  esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_ON);
@@ -111,8 +115,12 @@ void setup() {
   esp_ble_gap_set_security_param(ESP_BLE_SM_SET_RSP_KEY, &rsp_key, sizeof(uint8_t));
   Serial.println("Ready!");
 
+  // Store serial port to use for hearthBeatEBiCS()
+  KingMeter_Init (&KM, &Serial1);
+
   // Play ready sound
   delay(2500);
+/*
   tone(BUZZER_PIN, 300, 100);
   delay(100);
   tone(BUZZER_PIN, 400, 100);
@@ -120,13 +128,14 @@ void setup() {
   tone(BUZZER_PIN, 500, 100);
   delay(100);
   noTone(BUZZER_PIN);
-/*
+*/
   beep(300, 100);
   beep(400, 100);
   beep(500, 100);
-*/
+
   // disable AudioLogger
   Print* audioLogger = &silencedLogger;
 
+  LEDmode = 0x10;
   turnOnController();
 }

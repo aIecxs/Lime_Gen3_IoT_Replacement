@@ -41,7 +41,7 @@ void readController() {
         pDebugCharacteristic->setValue(command, msgLen + 2);
         pDebugCharacteristic->notify();
 
-        uint16_t new_checksum = crc16(command, msgLen + 6, 0x1021, 0x0000, 0x0000, false, false);
+        uint16_t new_checksum = calcCRC16(command, msgLen + 6, 0x1021, 0x0000, 0x0000, false, false);
         uint16_t old_checksum = (uint16_t(command[msgLen + 6]) << 8) | uint16_t(command[msgLen + 7]);
 
         // Check if the command has correct checksum
@@ -80,3 +80,10 @@ void sendControllerCommand(byte* cmd, size_t len) {
   delay(500);
   isSending = 0;
 }
+
+
+
+
+// This is the code for the custom controller
+
+KINGMETER_t KM;

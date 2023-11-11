@@ -35,10 +35,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #if (DISPLAY_TYPE == DISPLAY_TYPE_KINGMETER_901U)
 const uint8_t KM_901U_HANDSHAKE[64] =
 {
-    201, 107,  13, 229, 241, 198, 108, 230, 186,  67,  39,  92, 217, 140, 177,  36,
-     22,  71, 174,  39, 161, 151,   7, 140, 107, 155, 189, 195, 209, 106,  63, 191,
-    218,  47, 221,  46, 135, 145,  98,  82,  35,  42,  85,  99,  35,  43, 180,  12,
-      3, 126,  94, 103, 198,  10, 182, 249, 253,  86, 105, 196, 217, 183, 195, 115
+    137, 159, 134, 249,  88,  11, 250,  61,  33, 150,   3, 193, 118, 141, 209,  94,
+    226,  68, 146, 158, 145, 127, 216,  62, 116, 230, 101, 211, 251,  54, 229, 247,
+     20, 222,  59,  63,  35, 252, 142, 238,  23, 197,  84,  77, 147, 173, 210,  57,
+    142, 223, 157,  97,  36, 160, 229, 237,  75,  80,  37, 113, 154,  88,  23, 120
 };
 #endif
 
@@ -149,7 +149,7 @@ void hearthBeatEBiCS(KINGMETER_t* KM_ctx)
         KM_ctx->LastRx = millis();
 
         #if (DISPLAY_TYPE == DISPLAY_TYPE_KINGMETER_901U)
-        KM_ctx->RxBuff[3] = 0x52;         // Operation mode
+        KM_ctx->RxBuff[2] = 0x52;         // Operation mode
         #endif
 
         // send hearthBeat to EBiCS Controller every 500 ms
@@ -213,7 +213,7 @@ static void KM_618U_Service(KINGMETER_t* KM_ctx)
         for(i=1; i<4; i++)
         {
             KM_ctx->SerialPort->write(TxBuff[i]);                       // Send TxBuff[1..3]
-            TxBuff[4] = TxBuff[4] ^ TxBuff[i];                          // Calculate XOR CheckSum
+            TxBuff[4] ^= TxBuff[i];                                     // Calculate XOR CheckSum
         }
 
         KM_ctx->SerialPort->write(TxBuff[4]);                           // Send XOR CheckSum
@@ -316,31 +316,31 @@ static void KM_901U_Service(KINGMETER_t* KM_ctx)
     {
         KM_ctx->RxState = RXSTATE_STARTCODE;
 
-        switch(KM_ctx->RxBuff[3])
+        switch(KM_ctx->RxBuff[2])
         {
             case 0x52:      // Operation mode
 
                 // Prepare Tx message
                 TxBuff[0]  = 0X3A;                                      // StartCode
                 TxBuff[1]  = 0x1A;                                      // SrcAdd:  Controller
-                TxBuff[2]  = 0X28;                                      // DestAdd: LCD
-                TxBuff[3]  = 0x52;                                      // CmdCode
-                TxBuff[4]  = 0x06;                                      // DataSize
+//                TxBuff[2]  = 0X28;                                      // DestAdd: LCD
+                TxBuff[2]  = 0x52;                                      // CmdCode
+                TxBuff[3]  = 0x05;                                      // DataSize
 
-                TxBuff[5]  =  KM_ctx->Rx.AssistLevel;                               // 0..255
-                TxBuff[6]  = (KM_ctx->Rx.Headlight     << 6) |                      // KM_HEADLIGHT_OFF / KM_HEADLIGHT_ON / KM_HEADLIGHT_LOW / KM_HEADLIGHT_HIGH
+                TxBuff[4]  =  KM_ctx->Rx.AssistLevel;                               // 0..255
+                TxBuff[5]  = (KM_ctx->Rx.Headlight     << 6) |                      // KM_HEADLIGHT_OFF / KM_HEADLIGHT_ON / KM_HEADLIGHT_LOW / KM_HEADLIGHT_HIGH
                              (KM_ctx->Rx.Battery       << 5) |                      // KM_BATTERY_NORMAL / KM_BATTERY_LOW
                              (KM_ctx->Rx.PushAssist    << 4) |                      // KM_PUSHASSIST_OFF / KM_PUSHASSIST_ON
                              (KM_ctx->Rx.PowerAssist   << 3) |                      // KM_THROTTLE_OFF / KM_THROTTLE_ON
                              (KM_ctx->Rx.Throttle      << 2) |                      // KM_CRUISE_OFF / KM_CRUISE_ON
                              (KM_ctx->Rx.CruiseControl << 1) |                      // KM_OVERSPEED_NO / KM_OVERSPEED_YES
                               KM_ctx->Rx.OverSpeed;                                 // KM_OVERSPEED_NO / KM_OVERSPEED_YES
-                TxBuff[7]  =  KM_ctx->Rx.SPEEDMAX_Limit_x10       & 0xFF;           // Unit: 0.1km/h
-                TxBuff[8]  = (KM_ctx->Rx.SPEEDMAX_Limit_x10 >> 8) & 0xFF;
-                TxBuff[9]  =  KM_ctx->Rx.CUR_Limit_x10            & 0xFF;           // Unit: 0.1A
-                TxBuff[10] = (KM_ctx->Rx.CUR_Limit_x10      >> 8) & 0xFF;
 
-                TxCnt = 11;
+                TxBuff[6]  = 0x0D;
+                TxBuff[7]  = 0xAC;
+                TxBuff[8]  = 0x00;
+
+                TxCnt = 9;
                 break;
 
 
@@ -349,25 +349,28 @@ static void KM_901U_Service(KINGMETER_t* KM_ctx)
                 // Prepare Tx message with handshake code
                 TxBuff[0] = 0X3A;                                       // StartCode
                 TxBuff[1] = 0x1A;                                       // SrcAdd:  Controller
-                TxBuff[2] = 0X28;                                       // DestAdd: LCD
-                TxBuff[3] = 0x53;                                       // CmdCode
-                TxBuff[4] = 0x01;                                       // DataSize
+//                TxBuff[2] = 0X28;                                       // DestAdd: LCD
+                TxBuff[2] = 0x53;                                       // CmdCode
+                TxBuff[3] = 0x01;                                       // DataSize
 
-                TxBuff[5]  =  (KM_ctx->Settings.PAS_RUN_Direction   << 7) & 0x80;       // KM_PASDIR_FORWARD / KM_PASDIR_BACKWARD
-                TxBuff[6]  =   KM_ctx->Settings.PAS_SCN_Tolerance;                      // 2..9 Number of PAS signals to start the motor
-                TxBuff[7]  =   KM_ctx->Settings.PAS_N_Ratio;                            // 0..255 PAS ratio
-                TxBuff[8]  = ((KM_ctx->Settings.HND_HL_ThrParam     << 7) & 0x80) |     // KM_HND_HL_NO / KM_HND_HL_YES
+                TxBuff[4]  =  (KM_ctx->Settings.PAS_RUN_Direction   << 7) & 0x80;       // KM_PASDIR_FORWARD / KM_PASDIR_BACKWARD
+                TxBuff[5]  =   KM_ctx->Settings.PAS_SCN_Tolerance;                      // 2..9 Number of PAS signals to start the motor
+                TxBuff[6]  =   KM_ctx->Settings.PAS_N_Ratio;                            // 0..255 PAS ratio
+                TxBuff[7]  = ((KM_ctx->Settings.HND_HL_ThrParam     << 7) & 0x80) |     // KM_HND_HL_NO / KM_HND_HL_YES
                              ((KM_ctx->Settings.HND_HF_ThrParam     << 6) & 0x40);      // KM_HND_HF_NO / KM_HND_HF_YES
-                TxBuff[9]  =   KM_ctx->Settings.SYS_SSP_SlowStart;                      // 1..4 Level of soft ramping at start
-                TxBuff[10] =   KM_ctx->Settings.SPS_SpdMagnets;                         // Number of magnets of speedsensor
-                TxBuff[11] =   KM_ctx->Settings.VOL_1_UnderVolt_x10       & 0xFF;       // Unit: 0.1V
-                TxBuff[12] =  (KM_ctx->Settings.VOL_1_UnderVolt_x10 >> 8) & 0xFF;
+//                TxBuff[8]  =   KM_ctx->Settings.SYS_SSP_SlowStart;                      // 1..4 Level of soft ramping at start
+                TxBuff[9]  =   KM_ctx->Settings.SPS_SpdMagnets;                         // Number of magnets of speedsensor
+//                TxBuff[10] =   KM_ctx->Settings.VOL_1_UnderVolt_x10       & 0xFF;       // Unit: 0.1V
+//                TxBuff[11] =  (KM_ctx->Settings.VOL_1_UnderVolt_x10 >> 8) & 0xFF;
                 TxBuff[13] =   KM_ctx->Settings.WheelSize_mm              & 0xFF;       // Unit: 1mm
-                TxBuff[14] =  (KM_ctx->Settings.WheelSize_mm        >> 8) & 0xFF;
+                TxBuff[12] =  (KM_ctx->Settings.WheelSize_mm        >> 8) & 0xFF;
 
-                TxBuff[15] = random(0, sizeof(KM_901U_HANDSHAKE)-1);                    // Handshake
+                TxBuff[11] =  (KM_ctx->Rx.SPEEDMAX_Limit_x10 / 10) & 0xFF;                                     // Unit: km/h
+                TxBuff[8]  =  (KM_ctx->Rx.CUR_Limit_x10 > 315) ? 0x3F : (KM_ctx->Rx.CUR_Limit_x10 / 5) & 0x3F; // Unit: mA
 
-                TxCnt = 16;
+                TxBuff[14] = random(0, sizeof(KM_901U_HANDSHAKE)-1);                    // Handshake
+
+                TxCnt = 15;
                 break;
 
 
@@ -386,7 +389,7 @@ static void KM_901U_Service(KINGMETER_t* KM_ctx)
             for(i=1; i<TxCnt; i++)
             {
                 KM_ctx->SerialPort->write(TxBuff[i]);                   // Send TxBuff[1..x]
-                CheckSum = CheckSum + TxBuff[i];                        // Calculate CheckSum
+                CheckSum += TxBuff[i];                                  // Calculate CheckSum
             }
 
             KM_ctx->SerialPort->write(lowByte(CheckSum));               // Send CheckSum low
@@ -426,9 +429,9 @@ static void KM_901U_Service(KINGMETER_t* KM_ctx)
             KM_ctx->RxBuff[KM_ctx->RxCnt] = KM_ctx->SerialPort->read();
             KM_ctx->RxCnt++;
 
-            if(KM_ctx->RxCnt == 5)                                      // Range check of Data size
+            if(KM_ctx->RxCnt == 4)                                      // Range check of Data size
             {
-                if(KM_ctx->RxBuff[4] > (KM_MAX_RXBUFF-5-4))
+                if(KM_ctx->RxBuff[3] > (KM_MAX_RXBUFF-5-4))
                 {
                     KM_ctx->RxState = RXSTATE_STARTCODE;                // Invalid Data size, cancel reception
                     break;
@@ -436,13 +439,13 @@ static void KM_901U_Service(KINGMETER_t* KM_ctx)
             }
 
 
-            if(KM_ctx->RxCnt == (5 + KM_ctx->RxBuff[4] + 4))            // Check for reception of complete message
+            if(KM_ctx->RxCnt == (4 + KM_ctx->RxBuff[3] + 4))            // Check for reception of complete message
             {
                 // Verify CheckSum
                 CheckSum = 0x0000;
-                for(i=1; i<(5+KM_ctx->RxBuff[4]); i++)
+                for(i=1; i<(4+KM_ctx->RxBuff[3]); i++)
                 {
-                    CheckSum = CheckSum + KM_ctx->RxBuff[i];            // Calculate CheckSum
+                    CheckSum += KM_ctx->RxBuff[i];                      // Calculate CheckSum
                 }
 
                 if((lowByte(CheckSum) == KM_ctx->RxBuff[i]) && (highByte(CheckSum) == KM_ctx->RxBuff[i+1]))
@@ -465,12 +468,12 @@ static void KM_901U_Service(KINGMETER_t* KM_ctx)
     {
         KM_ctx->RxState = RXSTATE_SENDTXMSG;
 
-        switch(KM_ctx->RxBuff[3])
+        switch(KM_ctx->RxBuff[2])
         {
             case 0x52:      // Operation mode
 
                 // Decode Rx message
-                if (KM_ctx->RxBuff[5] == 0x40)
+                if (KM_ctx->RxBuff[4] == 0x40)
                 {
                     KM_ctx->Tx.Battery = KM_BATTERY_LOW;                // State data (only UnderVoltage bit has influence on display)
                 }
@@ -478,9 +481,9 @@ static void KM_901U_Service(KINGMETER_t* KM_ctx)
                 {
                     KM_ctx->Tx.Battery = KM_BATTERY_NORMAL;             // State data (only UnderVoltage bit has influence on display)
                 }
-                KM_ctx->Tx.Current_x10        = (KM_ctx->RxBuff[7] << 8) | KM_ctx->RxBuff[6];
-                KM_ctx->Tx.Wheeltime_ms       = (KM_ctx->RxBuff[9] << 8) | KM_ctx->RxBuff[8];
-                KM_ctx->Tx.Error              =  KM_ctx->RxBuff[10];
+                KM_ctx->Tx.Current_x10        = (KM_ctx->RxBuff[5] * 10) / 3; // Current low Strom in 1/3 Ampere, nur ein Byte
+                KM_ctx->Tx.Wheeltime_ms       = (KM_ctx->RxBuff[6] << 8) | KM_ctx->RxBuff[7];
+                KM_ctx->Tx.Error              =  KM_ctx->RxBuff[8];
 
                 break;
 
@@ -488,7 +491,7 @@ static void KM_901U_Service(KINGMETER_t* KM_ctx)
             case 0x53:      // Settings mode
    
                 // Decode Rx message with handshake code
-                if (KM_ctx->RxBuff[5] == KM_901U_HANDSHAKE[TxBuff[15]])
+                if (KM_ctx->RxBuff[7] == KM_901U_HANDSHAKE[TxBuff[14]])
                 {
                     Serial.println("OK: Handshake true");
                 }

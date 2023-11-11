@@ -351,7 +351,7 @@ static void KM_901U_Service(KINGMETER_t* KM_ctx)
                 TxBuff[1] = 0x1A;                                       // SrcAdd:  Controller
 //                TxBuff[2] = 0X28;                                       // DestAdd: LCD
                 TxBuff[2] = 0x53;                                       // CmdCode
-                TxBuff[3] = 0x01;                                       // DataSize
+                TxBuff[3] = 0x0A;                                       // DataSize
 
                 TxBuff[4]  =  (KM_ctx->Settings.PAS_RUN_Direction   << 7) & 0x80;       // KM_PASDIR_FORWARD / KM_PASDIR_BACKWARD
                 TxBuff[5]  =   KM_ctx->Settings.PAS_SCN_Tolerance;                      // 2..9 Number of PAS signals to start the motor
@@ -359,7 +359,7 @@ static void KM_901U_Service(KINGMETER_t* KM_ctx)
                 TxBuff[7]  = ((KM_ctx->Settings.HND_HL_ThrParam     << 7) & 0x80) |     // KM_HND_HL_NO / KM_HND_HL_YES
                              ((KM_ctx->Settings.HND_HF_ThrParam     << 6) & 0x40);      // KM_HND_HF_NO / KM_HND_HF_YES
 //                TxBuff[8]  =   KM_ctx->Settings.SYS_SSP_SlowStart;                      // 1..4 Level of soft ramping at start
-                TxBuff[9]  =   KM_ctx->Settings.SPS_SpdMagnets;                         // Number of magnets of speedsensor
+//                TxBuff[9]  =   KM_ctx->Settings.SPS_SpdMagnets;                         // Number of magnets of speedsensor
 //                TxBuff[10] =   KM_ctx->Settings.VOL_1_UnderVolt_x10       & 0xFF;       // Unit: 0.1V
 //                TxBuff[11] =  (KM_ctx->Settings.VOL_1_UnderVolt_x10 >> 8) & 0xFF;
                 TxBuff[13] =   KM_ctx->Settings.WheelSize_mm              & 0xFF;       // Unit: 1mm
@@ -368,9 +368,10 @@ static void KM_901U_Service(KINGMETER_t* KM_ctx)
                 TxBuff[11] =  (KM_ctx->Rx.SPEEDMAX_Limit_x10 / 10) & 0xFF;                                     // Unit: km/h
                 TxBuff[8]  =  (KM_ctx->Rx.CUR_Limit_x10 > 315) ? 0x3F : (KM_ctx->Rx.CUR_Limit_x10 / 5) & 0x3F; // Unit: mA
 
-                TxBuff[14] = random(0, sizeof(KM_901U_HANDSHAKE)-1);                    // Handshake
+                TxBuff[9]  = TxBuff[10];                                                // Handshake
+                TxBuff[10] = random(0, sizeof(KM_901U_HANDSHAKE)-1);
 
-                TxCnt = 15;
+                TxCnt = 14;
                 break;
 
 
@@ -481,7 +482,7 @@ static void KM_901U_Service(KINGMETER_t* KM_ctx)
                 {
                     KM_ctx->Tx.Battery = KM_BATTERY_NORMAL;             // State data (only UnderVoltage bit has influence on display)
                 }
-                KM_ctx->Tx.Current_x10        = (KM_ctx->RxBuff[5] * 10) / 3; // Current low Strom in 1/3 Ampere, nur ein Byte
+                KM_ctx->Tx.Current_x10        = (KM_ctx->RxBuff[5] * 10) / 3;
                 KM_ctx->Tx.Wheeltime_ms       = (KM_ctx->RxBuff[6] << 8) | KM_ctx->RxBuff[7];
                 KM_ctx->Tx.Error              =  KM_ctx->RxBuff[8];
 
@@ -491,7 +492,7 @@ static void KM_901U_Service(KINGMETER_t* KM_ctx)
             case 0x53:      // Settings mode
    
                 // Decode Rx message with handshake code
-                if (KM_ctx->RxBuff[7] == KM_901U_HANDSHAKE[TxBuff[14]])
+                if (KM_ctx->RxBuff[7] == KM_901U_HANDSHAKE[TxBuff[9]])
                 {
                     Serial.println("OK: Handshake true");
                 }

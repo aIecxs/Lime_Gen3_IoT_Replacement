@@ -133,31 +133,31 @@ void KingMeter_Service(KINGMETER_t* KM_ctx)
 
 
 
-/****************************************************************************************************
- * hearthBeatEBiCS() - Wrapper for KingMeter_Service (swapped Rx <-> Tx)
- *
- ***************************************************************************************************/
-void hearthBeatEBiCS(KINGMETER_t* KM_ctx)
-{
-    static bool isSending = 0;
-    if (!isSending && (millis() - KM_ctx->LastRx >= 500))
-    {
-        isSending = 1;
 
-        // Message received completely
-        KM_ctx->RxState = RXSTATE_SENDTXMSG;
-        KM_ctx->LastRx = millis();
 
-        #if (DISPLAY_TYPE == DISPLAY_TYPE_KINGMETER_901U)
-        KM_ctx->RxBuff[2] = 0x52;         // Operation mode
-        #endif
 
-        // send hearthBeat to EBiCS Controller every 500 ms
-        KingMeter_Service(KM_ctx);
 
-        isSending = 0;
-    }
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -335,10 +335,11 @@ static void KM_901U_Service(KINGMETER_t* KM_ctx)
                              (KM_ctx->Rx.Throttle      << 2) |                      // KM_CRUISE_OFF / KM_CRUISE_ON
                              (KM_ctx->Rx.CruiseControl << 1) |                      // KM_OVERSPEED_NO / KM_OVERSPEED_YES
                               KM_ctx->Rx.OverSpeed;                                 // KM_OVERSPEED_NO / KM_OVERSPEED_YES
-
-                TxBuff[6]  = 0x0D;
-                TxBuff[7]  = 0xAC;
-                TxBuff[8]  = 0x00;
+// ignored in EBiCS/EBiCS_Firmware
+                TxBuff[6]  =  KM_ctx->Rx.SPEEDMAX_Limit_x10       & 0xFF;           // Unit: 0.1km/h
+                TxBuff[7]  = (KM_ctx->Rx.SPEEDMAX_Limit_x10 >> 8) & 0xFF;
+                TxBuff[8]  =  KM_ctx->Rx.CUR_Limit_x10            & 0xFF;           // Unit: 0.1A
+//                TxBuff[9]  = (KM_ctx->Rx.CUR_Limit_x10      >> 8) & 0xFF;
 
                 TxCnt = 9;
                 break;

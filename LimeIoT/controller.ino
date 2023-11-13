@@ -86,4 +86,44 @@ void sendControllerCommand(byte* cmd, size_t len) {
 
 // This is the code for the custom controller
 
-KINGMETER_t KM;
+/****************************************************************************************************
+ * hearthBeatEBiCS() - Wrapper for KingMeter_Service (swapped Rx <-> Tx)
+ *
+ ***************************************************************************************************/
+void hearthBeatEBiCS(KINGMETER_t* KM_ctx)
+{
+    static bool isSending = 0;
+    if (!isSending && (millis() - KM_ctx->LastRx >= 500))
+    {
+        isSending = 1;
+
+        // Message received completely
+        KM_ctx->RxState = 1;
+        KM_ctx->LastRx = millis();
+
+        #if (DISPLAY_TYPE == DISPLAY_TYPE_KINGMETER_901U)
+        KM_ctx->RxBuff[2] = 0x52;         // Operation mode
+        #endif
+
+        // send hearthBeat to EBiCS Controller every 500 ms
+        KingMeter_Service(KM_ctx);
+
+        // flush serial hardware buffer
+        while (KM_ctx->SerialPort->available() > 0) {
+          KM_ctx->SerialPort->read();
+        }
+
+        isSending = 0;
+    }
+}
+
+
+void readControllerEBiCS() {
+
+  // custom controller firmware doesn't send anything by itself, we need to send hearthbeat and catch the reply
+  hearthBeatEBiCS(&KM);
+
+  speed = (KM.Settings.WheelSize_mm * 3600UL / KM.Tx.Wheeltime_ms + 500UL) / 1000;
+  battery = (KM.Tx.Battery == KM_BATTERY_LOW) ? KM_BATTERY_LOW : 100;
+
+}

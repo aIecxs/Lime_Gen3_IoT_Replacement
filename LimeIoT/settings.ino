@@ -19,7 +19,7 @@ class SettingsBLECallback : public BLECharacteristicCallbacks {
       case 0x03:
         customDisplayStatus = data[1] == 0x00 ? "" : String(data[1], HEX);
         break;
-      case 0x4:
+      case 0x04:
         LEDmode = 0x00;
         sendDisplayLED(green, off);
         break;
@@ -29,7 +29,7 @@ class SettingsBLECallback : public BLECharacteristicCallbacks {
         }
         break;
     }
-	byte settingsByte[] = { (byte)max_speed, (byte)alarm_delay, (byte)alarm_freq, (byte)alarm_reps };
+    byte settingsByte[] = { (byte)max_speed, (byte)alarm_delay, (byte)alarm_freq, (byte)alarm_reps };
     pSettingsCharacteristic->setValue(settingsByte, sizeof(settingsByte));
     pSettingsCharacteristic->notify();
   }

@@ -83,7 +83,8 @@ void loop() {
         lockScooter();
       }
     if (controllerIsOn && !commandIsSending) {
-      sendControllerCommand(hearthBeatEscByte, sizeof(hearthBeatEscByte));
+//      sendControllerCommand(hearthBeatEscByte, sizeof(hearthBeatEscByte));
+      hearthBeatEBiCS(&KM);
       if (deviceConnected || unlockForEver) {
         lastConnected = currentTime;
       }
@@ -108,10 +109,10 @@ void loop() {
     oldDeviceConnected = deviceConnected;
   }
   if (controllerIsOn || isUnlocked) {
-    readController();
-/*
+//    readController();
+
     // custom controller firmware doesn't send anything by itself, we need to send hearthbeat and catch the reply
-    hearthBeatEBiCS(&KM);
-*/
+    readControllerEBiCS();
+
   }
 }

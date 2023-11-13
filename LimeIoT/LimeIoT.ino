@@ -95,6 +95,9 @@ int max_speed = 28;
 RTC_DATA_ATTR byte alarm_cnt = 0;
 RTC_DATA_ATTR byte lastBattery = 0x00;
 
+// Parameters received from EBiCS custom controller firmware
+KINGMETER_t KM; // Kingmeter Protocol
+
 #define BUTTON_PIN_BITMASK ((1ULL << SHOCK_PIN) | (1ULL << BOOT_PIN))
 //#define BUTTON_PIN_BITMASK (1ULL << BOOT_PIN)
 

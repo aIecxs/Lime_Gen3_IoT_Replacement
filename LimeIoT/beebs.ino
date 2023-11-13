@@ -52,25 +52,30 @@ void alarmBeeb() {
   // avoid disorderly conduct in night mode
   if (alarm_cnt < 10) {
     playMP3("/alarm.mp3");
-    sendControllerCommand(lightBlinkEscByte, sizeof(lightBlinkEscByte));
+//    sendControllerCommand(lightBlinkEscByte, sizeof(lightBlinkEscByte));
+    KM.Rx.Headlight = KM_HEADLIGHT_HIGH;
     for (int i = 0; i < alarm_reps; i++) {
       LEDmode = 0x10;
       sendDisplayLED(red, on);
+      hearthBeatEBiCS(&KM);
 //      beep(alarm_freq, alarm_delay);
       delay(alarm_delay);
       LEDmode = 0x00;
       sendDisplayLED(red, off);
       delay(alarm_delay);
     }
-    sendControllerCommand(lightBlinkEscByte, sizeof(lightBlinkEscByte));
+//    sendControllerCommand(lightBlinkEscByte, sizeof(lightBlinkEscByte));
+    KM.Rx.Headlight = KM_HEADLIGHT_HIGH;
     for (int i = 0; i < alarm_reps; i++) {
       LEDmode = 0x10;
       sendDisplayLED(red, on);
+      hearthBeatEBiCS(&KM);
       delay(alarm_delay);
       LEDmode = 0x00;
       sendDisplayLED(red, off);
       delay(alarm_delay);
     }
+    KM.Rx.Headlight = lightIsOn ? KM_HEADLIGHT_ON : KM_HEADLIGHT_OFF;
   } else delay((4UL * alarm_delay * alarm_reps) + 1000); // debounce GPIO input
   alarmIsOn = 0;
 }

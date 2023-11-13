@@ -36,12 +36,14 @@ class MainBLECallback : public BLECharacteristicCallbacks {
         alarmBeeb();
       }
       if (command == "lighton") {
-        sendControllerCommand(lightOnEscByte, sizeof(lightOnEscByte));
+//        sendControllerCommand(lightOnEscByte, sizeof(lightOnEscByte));
+        KM.Rx.Headlight = KM_HEADLIGHT_ON;
         delay(100);
         lightIsOn = 1;
       }
       if (command == "lightoff") {
-        sendControllerCommand(lightOffEscByte, sizeof(lightOffEscByte));
+//        sendControllerCommand(lightOffEscByte, sizeof(lightOffEscByte));
+        KM.Rx.Headlight = KM_HEADLIGHT_OFF;
         delay(100);
         lightIsOn = 0;
       }

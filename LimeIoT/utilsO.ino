@@ -1,8 +1,10 @@
 void lockScooter() {
-  sendControllerCommand(offEscByte, sizeof(offEscByte));
+//  sendControllerCommand(offEscByte, sizeof(offEscByte));
+  KM.Rx.PushAssist = KM_PUSHASSIST_OFF;
   delay(100);
   isUnlocked = 0;
-  sendControllerCommand(lightOffEscByte, sizeof(lightOffEscByte));
+//  sendControllerCommand(lightOffEscByte, sizeof(lightOffEscByte));
+  KM.Rx.Headlight = KM_HEADLIGHT_OFF;
   delay(100);
   lightIsOn = 0;
 }
@@ -19,10 +21,12 @@ void unlockScooter() {
     turnOnController();
     delay(1500);
   }
-  sendControllerCommand(onEscByte, sizeof(onEscByte));
+//  sendControllerCommand(onEscByte, sizeof(onEscByte));
+  KM.Rx.PushAssist = KM_PUSHASSIST_ON;
   delay(100);
   isUnlocked = 1;
-  sendControllerCommand(lightOnEscByte, sizeof(lightOnEscByte));
+//  sendControllerCommand(lightOnEscByte, sizeof(lightOnEscByte));
+  KM.Rx.Headlight = KM_HEADLIGHT_ON;
   delay(100);
   lightIsOn = 1;
 }

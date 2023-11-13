@@ -39,7 +39,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //Config Options-----------------------------------------------------------------------------------------------------
 const int pas_tolerance=1;               //0... increase to make pas sensor slower but more tolerant against speed changes
 const float vcutoff=33.0;                //cutoff voltage in V;
-const float wheel_circumference = 2.075; //wheel circumference in m
+const float wheel_circumference = 0.798; //wheel circumference in m
 const byte wheel_magnets=1;              //configure your number of wheel magnets here
 const int spd_max1=22;                   //speed cutoff start in Km/h
 
@@ -203,8 +203,6 @@ void KingMeter_Init (KINGMETER_t* KM_ctx, HardwareSerial* DisplaySerial);
 #endif
 
 void KingMeter_Service(KINGMETER_t* KM_ctx);
-
-void hearthBeatEBiCS(KINGMETER_t* KM_ctx);
 
 
 #endif // (DISPLAY_TYPE & DISPLAY_TYPE_KINGMETER)

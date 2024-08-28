@@ -33,8 +33,8 @@ void loop() {
   }
 
   // wake on shock sensor
-//    if (digitalRead(SHOCK_PIN) == HIGH && !alarmIsOn && !deviceConnected && !isDisconnected && !isUnlocked && !unlockForEver) {
-    if (analogReadMilliVolts(SHOCK_PIN) > 700 && !alarmIsOn && !deviceConnected && !isDisconnected && !isUnlocked && !unlockForEver) {
+//    if (digitalRead(SHOCK_PIN) == HIGH && !alarmIsOn && battery && !deviceConnected && !isDisconnected && !isUnlocked && !unlockForEver) {
+    if (analogReadMilliVolts(SHOCK_PIN) > 700 && !alarmIsOn && battery && !deviceConnected && !isDisconnected && !isUnlocked && !unlockForEver) {
 //    digitalWrite(DISPLAY_PIN, LOW);
     digitalWrite(DISPLAY_PIN, HIGH);
     alarmBeeb();
@@ -55,7 +55,7 @@ void loop() {
     }
   }
   // lock on charging
-  if (isUnlocked && isCharging && !unlockForEver && !commandIsSending && !alarmIsOn && !isMP3Playing) {
+  if (isUnlocked && isCharging && !commandIsSending && !alarmIsOn && !isMP3Playing) {
     playMP3("/lock.mp3");
     lockScooter();
   }

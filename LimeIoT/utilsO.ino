@@ -5,6 +5,7 @@ void lockScooter() {
   sendControllerCommand(lightOffEscByte, sizeof(lightOffEscByte));
   delay(100);
   lightIsOn = 0;
+  beaconConnected = 0;
 }
 
 void turnOnController() {

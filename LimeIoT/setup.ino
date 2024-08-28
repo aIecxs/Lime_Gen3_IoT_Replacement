@@ -10,6 +10,16 @@ void setup() {
     &UARTTask,     // Task handle to keep track of created task
     0);            // pin task to core 0
 
+  // BLEScanTask for BLE Beacon
+  xTaskCreatePinnedToCore(
+    BLEScanTaskCode, // Task function.
+    "BLEScanTask", // name of task.
+    4096,          // Stack size of task
+    NULL,          // parameter of the task
+    2,             // priority of the task
+    &BLEScanTask,  // Task handle to keep track of created task
+    1);            // pin task to core 1
+
   // ESP32 onboard LED
   pinMode(LED_BUILTIN,OUTPUT);
 

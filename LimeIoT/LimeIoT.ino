@@ -67,6 +67,7 @@ byte lightBlinkEscByte[9] = { 0x46, 0x43, 0x16, 0x13, 0x00, 0x01, 0x06, 0xC2, 0x
 
 
 // Status
+bool beaconConnected = false;
 bool deviceConnected = false;
 bool oldDeviceConnected = false;
 bool isDisconnected = false;
@@ -102,6 +103,44 @@ RTC_DATA_ATTR byte lastBattery = 0x00;
 #define CHARACTERISTIC_UUID_MAIN "00c1acd4-f35b-4b5f-868d-36e5668d0929"
 #define CHARACTERISTIC_UUID_SETTINGS "7299b19e-7655-4c98-8cf1-69af4a65e982"
 #define CHARACTERISTIC_UUID_DEBUG "83ea7700-6ad7-4918-b1df-61031f95cf62"
+
+// BLE Beacon for unlocking - paste your ServiceUUID here
+#define BEACON_SERVICE_UUID "0000ffe0-0000-1000-8000-00805f9b34fb"
+
+TaskHandle_t BLEScanTask;
+
+void BLEScanTaskCode(void *pvParameters) {
+  vTaskDelay(5000 / portTICK_PERIOD_MS);
+  BLEScan* pBLEScan = BLEDevice::getScan(); // Create a scan object
+  pBLEScan->setActiveScan(true);            // Active scan
+  pBLEScan->setInterval(100);               // Set scan interval
+  pBLEScan->setWindow(99);                  // Set scan window
+
+  while (true) {
+    BLEScanResults foundDevices = pBLEScan->start(5, false); // Scan for 5 seconds
+    for (int i = 0; i < foundDevices.getCount(); i++) {
+      BLEAdvertisedDevice device = foundDevices.getDevice(i);
+      if (device.haveServiceUUID() && device.getServiceUUID().equals(BLEUUID(BEACON_SERVICE_UUID))) {
+        Serial.print("BLE Beacon connected. ServiceUUID: ");
+        Serial.println(BEACON_SERVICE_UUID);
+        if (!beaconConnected) {
+          beaconConnected = true;
+          commandIsSending = true;
+          playMP3("/unlock.mp3");
+          delay(100);
+          unlockForEver = 1;
+          unlockScooter();
+          commandIsSending = false;
+        }
+        unlockForEver = 1;
+        break;
+      } else if (beaconConnected) {
+          unlockForEver = 0;        
+        }
+    }
+    delay(100);
+  }
+}
 
 // Display Task
 TaskHandle_t UARTTask;
@@ -152,27 +191,17 @@ void UARTTaskCode(void *pvParameters) {
         }
         sendDisplayCommand(speed, battery != 0x00 ? battery : lastBattery, customDisplayStatus != "" ? customDisplayStatus : DISPLAY_STATUS_LOCKED);
       } else {
-/*
           if (LEDmode != 0x01 && !alarmIsOn) {
             LEDmode = (LEDmode == 0xC1) ? 0x01 : 0xC1;
             sendDisplayLED(green, on);
             delay(300);
         }
-*/
-          if (LEDmode != 0x00 && !alarmIsOn) {
-            LEDmode = (LEDmode == 0xC0) ? 0x00 : 0xC0;
-            sendDisplayLED(green, off);
-            delay(300);
-        }
         sendDisplayCommand(speed, battery != 0x00 ? battery : lastBattery, customDisplayStatus != "" ? customDisplayStatus : DISPLAY_STATUS_SCAN);
       }
     }
-/*
     if (!battery && !alarmIsOn) {
-      LEDmode = 0x04;
-      sendDisplayLED(yellow, on);
+      LEDmode = 0xC1;
     }
-*/
     delay(300);
   }
 }

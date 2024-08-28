@@ -50,7 +50,7 @@ void alarmBeeb() {
     delay(1500);
   }
   // avoid disorderly conduct in night mode
-  if (alarm_cnt < 10) {
+  if (alarm_cnt < 20 && alarm_cnt % 2) {
     playMP3("/alarm.mp3");
     sendControllerCommand(lightBlinkEscByte, sizeof(lightBlinkEscByte));
     for (int i = 0; i < alarm_reps; i++) {

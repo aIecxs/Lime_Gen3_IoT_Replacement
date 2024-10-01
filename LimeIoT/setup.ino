@@ -9,7 +9,7 @@ void setup() {
     2,             // priority of the task
     &UARTTask,     // Task handle to keep track of created task
     0);            // pin task to core 0
-
+/*
   // BLEScanTask for BLE Beacon
   xTaskCreatePinnedToCore(
     BLEScanTaskCode, // Task function.
@@ -19,7 +19,7 @@ void setup() {
     2,             // priority of the task
     &BLEScanTask,  // Task handle to keep track of created task
     1);            // pin task to core 1
-
+*/
   // ESP32 onboard LED
   pinMode(LED_BUILTIN,OUTPUT);
 
@@ -31,8 +31,8 @@ void setup() {
   // Display LOW = off, HIGH = on for npn transistor
   // Display LOW = on, HIGH = off for pnp transistor
   pinMode(DISPLAY_PIN, OUTPUT);
-//  digitalWrite(DISPLAY_PIN, LOW);
-  digitalWrite(DISPLAY_PIN, HIGH);
+  digitalWrite(DISPLAY_PIN, LOW);
+//  digitalWrite(DISPLAY_PIN, HIGH);
 //  gpio_hold_en(DISPLAY_PIN);
 /*
   //Setup sleep wakeup on Touch Pad 3 ( GPIO15 )
@@ -41,14 +41,14 @@ void setup() {
   esp_sleep_enable_ext0_wakeup(GPIO_NUM_14,1);
 */
   // wake on shock sensor
-  adcAttachPin(SHOCK_PIN);
-//  pinMode(SHOCK_PIN, INPUT_PULLDOWN);
+//  adcAttachPin(SHOCK_PIN); // Removed API: docs.espressif.com/projects/arduino-esp32/en/latest/migration_guides/2.x_to_3.0.html
+  pinMode(SHOCK_PIN, INPUT_PULLDOWN);
 //  rtc_gpio_deinit(SHOCK_PIN);
 //  rtc_gpio_pulldown_en(SHOCK_PIN);
 
   // wake on charger
-  adcAttachPin(BOOT_PIN);
-//  pinMode(BOOT_PIN, INPUT);
+//  adcAttachPin(BOOT_PIN); // Removed API
+  pinMode(BOOT_PIN, INPUT);
 
   // SHOCK_PIN | BOOT_PIN
 //  esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_ON);
@@ -127,7 +127,6 @@ void setup() {
 
   // Play ready sound
   delay(2500);
-/*
   tone(BUZZER_PIN, 300, 100);
   delay(100);
   tone(BUZZER_PIN, 400, 100);
@@ -135,11 +134,11 @@ void setup() {
   tone(BUZZER_PIN, 500, 100);
   delay(100);
   noTone(BUZZER_PIN);
-*/
+/*
   beep(300, 100);
   beep(400, 100);
   beep(500, 100);
-
+*/
   // disable AudioLogger
   Print* audioLogger = &silencedLogger;
 

@@ -95,15 +95,15 @@ int max_speed = 28;
 RTC_DATA_ATTR byte alarm_cnt = 0;
 RTC_DATA_ATTR byte lastBattery = 0x00;
 
-#define BUTTON_PIN_BITMASK ((1ULL << SHOCK_PIN) | (1ULL << BOOT_PIN))
-//#define BUTTON_PIN_BITMASK (1ULL << BOOT_PIN)
+//#define BUTTON_PIN_BITMASK ((1ULL << SHOCK_PIN) | (1ULL << BOOT_PIN))
+#define BUTTON_PIN_BITMASK (1ULL << BOOT_PIN)
 
 // BLE
 #define SERVICE_UUID "653bb0e0-1d85-46b0-9742-3b408f4cb83f"
 #define CHARACTERISTIC_UUID_MAIN "00c1acd4-f35b-4b5f-868d-36e5668d0929"
 #define CHARACTERISTIC_UUID_SETTINGS "7299b19e-7655-4c98-8cf1-69af4a65e982"
 #define CHARACTERISTIC_UUID_DEBUG "83ea7700-6ad7-4918-b1df-61031f95cf62"
-
+/*
 // BLE Beacon for unlocking - paste your ServiceUUID here
 #define BEACON_SERVICE_UUID "0000ffe0-0000-1000-8000-00805f9b34fb"
 
@@ -117,9 +117,9 @@ void BLEScanTaskCode(void *pvParameters) {
   pBLEScan->setWindow(99);                  // Set scan window
 
   while (true) {
-    BLEScanResults foundDevices = pBLEScan->start(5, false); // Scan for 5 seconds
-    for (int i = 0; i < foundDevices.getCount(); i++) {
-      BLEAdvertisedDevice device = foundDevices.getDevice(i);
+    BLEScanResults *foundDevices = pBLEScan->start(5, false); // Scan for 5 seconds
+    for (int i = 0; i < foundDevices->getCount(); i++) {
+      BLEAdvertisedDevice device = foundDevices->getDevice(i);
       if (device.haveServiceUUID() && device.getServiceUUID().equals(BLEUUID(BEACON_SERVICE_UUID))) {
         Serial.print("BLE Beacon connected. ServiceUUID: ");
         Serial.println(BEACON_SERVICE_UUID);
@@ -141,7 +141,7 @@ void BLEScanTaskCode(void *pvParameters) {
     delay(100);
   }
 }
-
+*/
 // Display Task
 TaskHandle_t UARTTask;
 

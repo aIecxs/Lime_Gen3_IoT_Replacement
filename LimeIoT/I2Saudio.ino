@@ -42,9 +42,9 @@ void playMP3Task(void *pvParameters) {
 }
 
 void playMP3(const char *mp3File) {
-//  out = new AudioOutputI2S(0, 1);   // built-in DAC
-  out = new AudioOutputI2S();       // MAX98357A I2S
-  out->SetPinout(BCLK_PIN, WCLK_PIN, DOUT_PIN);
+  out = new AudioOutputI2S(0, 1);   // built-in DAC
+//  out = new AudioOutputI2S();       // MAX98357A I2S
+//  out->SetPinout(BCLK_PIN, WCLK_PIN, DOUT_PIN);
   out->SetGain(1.0);
   file = new AudioFileSourceLittleFS(mp3File);
   if (!isMP3Playing) {
@@ -60,9 +60,9 @@ void playMP3(const char *mp3File) {
 }
 
 void beep(int freq, unsigned int duration) {
-//  out2 = new AudioOutputI2S(0, 1);   // built-in DAC
-  out2 = new AudioOutputI2S();       // MAX98357A I2S
-  out2->SetPinout(BCLK_PIN, WCLK_PIN, DOUT_PIN);
+  out2 = new AudioOutputI2S(0, 1);   // built-in DAC
+//  out2 = new AudioOutputI2S();       // MAX98357A I2S
+//  out2->SetPinout(BCLK_PIN, WCLK_PIN, DOUT_PIN);
   out2->SetGain(1.0);
   unsigned long tempo = 240000 / duration;
   char rtttlString[26];

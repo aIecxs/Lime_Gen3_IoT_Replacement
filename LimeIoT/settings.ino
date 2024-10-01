@@ -1,6 +1,7 @@
 class SettingsBLECallback : public BLECharacteristicCallbacks {
   void onWrite(BLECharacteristic* pCharacteristic) {
-    std::string value = pCharacteristic->getValue();
+    String preValue = pCharacteristic->getValue();
+    std::string value = preValue.c_str();
 
     uint8_t data[value.size()];
     memcpy(data, value.c_str(), value.size());

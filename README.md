@@ -1,7 +1,7 @@
 # Lime_Gen3_IoT_Replacement
 <b>Note:</b> This project is not endorsed or supported by Lime or any affiliated companies. Only do this on legally obtained scooter that you own! You can often buy them on auctions.
 
-![cover](../../tree/HEAD/iot_original.png)
+![cover](https://raw.githubusercontent.com/A-Emile/Lime_Gen3_IoT_Replacement/main/iot_original.png)
 
 The goal of this project is to replace the IoT of the Lime Gen 3 with a custom one, so we can control it with our own app.
 If you find out more about the communication, please submit it here.
@@ -10,9 +10,9 @@ If you find out more about the communication, please submit it here.
 The IoT module gets replaced with an ESP32 microcontroller to enable us to control the scooter with our app. The app communicates with the ESP32 using Bluetooth Low Energy (BLE). The ESP32 replaces the function of the original IoT while also providing real-time feedback on speed, battery level, and other information.
 
 ## Installation
-Install the ESP32 add-on for Arduino IDE if you doesnt have already. [Here is a tutorial](https://randomnerdtutorials.com/installing-the-esp32-board-in-arduino-ide-windows-instructions/). The Sketch is created with Arduino 1.8.19 for board platform esp32 by Espressif Systems version 2.0.13. Downgrade version to avoid exceeding of program storage space. Maximum is 1310720 bytes. For Arduino IDE 2.3.3 clone the [2.3.x](../../tree/2.3.x) branch.
+Install the ESP32 add-on for Arduino IDE if you doesnt have already. [Here is a tutorial](https://randomnerdtutorials.com/installing-the-esp32-board-in-arduino-ide-windows-instructions/).
 
-Install ESP32 LittleFS Uploader add-on for Arduino IDE. [Here is a tutorial](https://randomnerdtutorials.com/esp32-littlefs-arduino-ide). If you forgot to upload mp3 files, the [themed](../../tree/themed) branch will crash the ESP32 when playing audio / file not found.
+Install ESP32 LittleFS Uploader add-on for Arduino IDE. [Here is a tutorial](https://randomnerdtutorials.com/esp32-littlefs-arduino-ide).
 
 Install the [crc](https://github.com/RobTillaart/CRC) library by robtillaart from the library manager.
 
@@ -20,9 +20,9 @@ Install the [ESP8266Audio](https://github.com/earlephilhower/ESP8266Audio) libra
 
 Flash the controller with [unlocked firmware](https://cloud.scooterhacking.org/release/lime_dropbox) (`Lime Gen3 25kmh locked.hex`).
 
-Flash the arduino code from [LimeIoT](../../tree/HEAD/LimeIoT) folder to the esp32.
+Flash the arduino code from [LimeIoT](../../tree/HEAD/LimeIoT) folder to the esp32. The Sketch is created with Arduino 1.8.19 for board platform esp32 by Espressif Systems version 2.0.13. For Arduino 1.8.19 downgrade version to avoid exceeding of program storage space. Maximum is 1310720 bytes. For Arduino IDE 2.3.3 clone the [2.3.x](../../tree/2.3.x) branch.
 
-Flash the MP3 files from "Tools" -> "ESP32 Sketch Data Upload" menu to LittleFS. You can change theme by copying files from [themes](../../tree/HEAD/LimeIoT/themes) into sketch `'data'` folder. only the sketch data folder is uploaded.
+Flash the MP3 files from "Tools" -> "ESP32 Sketch Data Upload" menu to LittleFS. You can change theme by copying files from [themes](../../tree/HEAD/LimeIoT/themes) into sketch `'data'` folder. only the sketch data folder is uploaded. If you forgot to upload mp3 files, the [themed](../../tree/themed) branch will crash the ESP32 when playing audio / file not found.
 
 <b>Note:</b> The controller gives you 42v. So you have to convert it to stable 5v for the display and the esp32. I have done it using a buck converter.
 

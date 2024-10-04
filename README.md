@@ -22,7 +22,7 @@ Flash the controller with [unlocked firmware](https://cloud.scooterhacking.org/r
 
 Flash the arduino code from [LimeIoT](../../tree/HEAD/LimeIoT) folder to the esp32. The Sketch is created with Arduino 1.8.19 for board platform esp32 by Espressif Systems version 2.0.13. For Arduino 1.8.19 downgrade version to avoid exceeding of program storage space. Maximum is 1310720 bytes. For Arduino IDE 2.3.3 clone the [2.3.x](../../tree/2.3.x) branch.
 
-Flash the MP3 files from "Tools" -> "ESP32 Sketch Data Upload" menu to LittleFS. You can change theme by copying files from [themes](../../tree/HEAD/LimeIoT/themes) into sketch `'data'` folder. only the sketch data folder is uploaded. If you forgot to upload mp3 files, the [themed](../../tree/themed) branch will crash the ESP32 when playing audio / file not found.
+Flash the MP3 files from "Tools" -> "ESP32 Sketch Data Upload" menu to LittleFS (Arduino 1.8.19) or `[Ctrl]` + `[Shift]` + `[P]` -> `">Upload LittleFS to Pico/ESP8266/ESP32"` (Arduino IDE 2.3.3). You can change theme by copying files from [themes](../../tree/HEAD/LimeIoT/themes) into sketch `'data'` folder. only the sketch data folder is uploaded. If you forgot to upload mp3 files, the [themed](../../tree/themed) branch will crash the ESP32 when playing audio / file not found. Troubleshooting: If you get the following error message [ERROR: No port specified, check IDE menus](https://github.com/earlephilhower/arduino-littlefs-upload/issues/12), restart the Arduino IDE and try again. 
 
 <b>Note:</b> The controller gives you 42v. So you have to convert it to stable 5v for the display and the esp32. I have done it using a buck converter.
 

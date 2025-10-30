@@ -38,7 +38,7 @@ Connect the wires:
 | Display TX       | GPIO 16   |
 | Display RX       | GPIO 17   |
 
-(Optional) If you want, you can connect the speaker to `GPIO 13` with a base resistor and transistor. For the [pcb board](https://scootertalk.org/forum/viewtopic.php?t=5474&start=188) the speaker is `GPIO 25`. For more gain connect Adafruit I2S Amplifier [MAX98357A](https://www.adafruit.com/product/3006) DIN `GPIO 27` BCLK `GPIO 26` LRCLK `GPIO 25`.
+(Optional) If you want, you can connect the speaker to `GPIO 13` with a base resistor and transistor. For the [pcb board](https://web.archive.org/web/2024/scootertalk.org/forum/viewtopic.php?t=5474&start=180) the speaker is `GPIO 25`. For more gain connect Adafruit I2S Amplifier [MAX98357A](https://www.adafruit.com/product/3006) DIN `GPIO 27` BCLK `GPIO 26` LRCLK `GPIO 25`.
 
 (Optional) You can connect any alarm sensor to `GPIO 14` max input voltage 4.6v (!)
 

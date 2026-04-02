@@ -1,16 +1,14 @@
 #include <CRC16.h>
 #include <CRC.h>
-#include <BLEDevice.h>
-#include <BLEUtils.h>
-#include <BLEServer.h>
-#include <BLE2902.h>
+#include <NimBLEDevice.h>
+//#include <nvs_flash.h>
 #include <esp_sleep.h>
 #include <driver/rtc_io.h>
 #include "display.h"
 
 #define SCOOTER_NAME "lme-UJEYGJA"
-const char *UPDATER_WIFI_PASSWORD = "123456789";
-const uint32_t BLE_PASSWORD = 123456789;
+//const char *UPDATER_WIFI_PASSWORD = "123456789"; // (not used)
+const uint32_t BLE_PASSWORD = 123456; // 6-digit TK BLE legacy pairing
 
 // Set pins
 #define LED_BUILTIN 2
@@ -145,6 +143,7 @@ void BLEScanTaskCode(void *pvParameters) {
 // Display Task
 TaskHandle_t UARTTask;
 
+/* // merged into -> ble_security.ino -> MySecurityCallbacks
 class MyServerCallbacks : public BLEServerCallbacks {
   void onConnect(BLEServer *pServer) {
     deviceConnected = true;
@@ -154,6 +153,7 @@ class MyServerCallbacks : public BLEServerCallbacks {
     deviceConnected = false;
   }
 };
+*/
 
 // UARTTaskCode: read controller and send command to display every 300ms
 void UARTTaskCode(void *pvParameters) {

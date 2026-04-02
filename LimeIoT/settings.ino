@@ -1,5 +1,5 @@
 class SettingsBLECallback : public BLECharacteristicCallbacks {
-  void onWrite(BLECharacteristic* pCharacteristic) {
+  void onWrite(BLECharacteristic* pCharacteristic, NimBLEConnInfo& connInfo) {
     String preValue = pCharacteristic->getValue();
     std::string value = preValue.c_str();
 

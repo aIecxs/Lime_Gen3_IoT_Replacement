@@ -1,5 +1,5 @@
 class MainBLECallback : public BLECharacteristicCallbacks {
-  void onWrite(BLECharacteristic *pCharacteristic) {
+  void onWrite(BLECharacteristic *pCharacteristic, NimBLEConnInfo& connInfo) {
     String value = pCharacteristic->getValue();
     if (value.length() > 0) {
       String command = "";

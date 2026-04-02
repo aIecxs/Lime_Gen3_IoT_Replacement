@@ -1,32 +1,40 @@
-class MySecurity : public BLESecurityCallbacks
+class MySecurityCallbacks : public BLEServerCallbacks
 {
 
-  uint32_t onPassKeyRequest()
+  uint32_t onPassKeyDisplay()
   {
     ESP_LOGI(LOG_TAG, "PassKeyRequest");
-    return 123456789;
+    return (uint32_t)BLE_PASSWORD;
   }
-  void onPassKeyNotify(uint32_t pass_key)
+  void onPassKeyEntry(NimBLEConnInfo& connInfo)
   {
-    ESP_LOGI(LOG_TAG, "The passkey Notify number:%d", pass_key);
+    ESP_LOGI(LOG_TAG, "The passkey Notify number:%d", BLE_PASSWORD);
+    BLEDevice::injectPassKey(connInfo, BLE_PASSWORD);
   }
-  bool onConfirmPIN(uint32_t pass_key)
+  void onConfirmPasskey(NimBLEConnInfo& connInfo, uint32_t pass_key)
   {
     ESP_LOGI(LOG_TAG, "The passkey YES/NO number:%d", pass_key);
+    bool accepted = (pass_key == BLE_PASSWORD);
+    BLEDevice::injectConfirmPasskey(connInfo, accepted);
     vTaskDelay(5000);
-    return true;
-  }
-  bool onSecurityRequest()
-  {
-    ESP_LOGI(LOG_TAG, "SecurityRequest");
-    return true;
   }
 
-  void onAuthenticationComplete(esp_ble_auth_cmpl_t cmpl)
+  void onAuthenticationComplete(NimBLEConnInfo& connInfo)
   {
-    ESP_LOGI(LOG_TAG, "Starting BLE work!");
-    playMP3("/connected.mp3");
-    delay(100);
-    alarm_cnt = 0;   // disable night mode
+    if (connInfo.isAuthenticated()) {
+      ESP_LOGI(LOG_TAG, "Starting BLE work!");
+      playMP3("/connected.mp3");
+      delay(100);
+      alarm_cnt = 0;   // disable night mode
+    }
+  }
+
+  // class MyServerCallbacks : public BLEServerCallbacks
+  void onConnect(BLEServer *pServer, NimBLEConnInfo& connInfo) {
+    deviceConnected = true;
+  };
+
+  void onDisconnect(BLEServer *pServer, NimBLEConnInfo& connInfo, int reason) {
+    deviceConnected = false;
   }
 };

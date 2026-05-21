@@ -34,7 +34,11 @@ void setup() {
 //  rtc_gpio_pulldown_en(SHOCK_PIN);
 
   // wake on charger
+#ifndef CONFIG_PSM
   pinMode(BOOT_PIN, INPUT);
+#else
+  adcAttachPin(BOOT_PIN);
+#endif
 
   // SHOCK_PIN | BOOT_PIN
 //  esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_ON);

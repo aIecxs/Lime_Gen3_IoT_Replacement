@@ -8,6 +8,9 @@ const unsigned short sleepTimer = 3 * 60 * 60; // 3 hours
 unsigned long lastConnected = 0;
 const unsigned short lockTimer = 3 * 60 ; // 3 minutes
 
+// debounce GPIO input
+getPin bootPin(BOOT_PIN, 700); // mV = HIGH
+
 void loop() {
   unsigned long currentTime = millis() / 1000;
 
@@ -58,7 +61,7 @@ void loop() {
 #endif
 
   // wake on charger (decrease idle time with pull-down resistor)
-  getPin(BOOT_PIN, &isBooted, 5);
+  bootPin.get(&isBooted, 5000); // ms
   if (isBooted || (currentTime % 80000 == 0)) {
     if (!controllerIsOn && !isIdle) { // update battery once a day
 #ifdef CONFIG_PNP

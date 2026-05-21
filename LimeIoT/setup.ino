@@ -9,17 +9,7 @@ void setup() {
     2,             // priority of the task
     &UARTTask,     // Task handle to keep track of created task
     0);            // pin task to core 0
-/*
-  // BLEScanTask for BLE Beacon
-  xTaskCreatePinnedToCore(
-    BLEScanTaskCode, // Task function.
-    "BLEScanTask", // name of task.
-    4096,          // Stack size of task
-    NULL,          // parameter of the task
-    2,             // priority of the task
-    &BLEScanTask,  // Task handle to keep track of created task
-    1);            // pin task to core 1
-*/
+
   // ESP32 onboard LED
   pinMode(LED_BUILTIN,OUTPUT);
 
@@ -37,20 +27,13 @@ void setup() {
   digitalWrite(DISPLAY_PIN, HIGH);
 #endif
 //  gpio_hold_en(DISPLAY_PIN);
-/*
-  //Setup sleep wakeup on Touch Pad 3 ( GPIO15 )
-  touchSleepWakeUpEnable(T3,40);
-  //Setup sleep wakeup to shock sensor
-  esp_sleep_enable_ext0_wakeup(GPIO_NUM_14,1);
-*/
+
   // wake on shock sensor
-//  adcAttachPin(SHOCK_PIN); // Removed API: docs.espressif.com/projects/arduino-esp32/en/latest/migration_guides/2.x_to_3.0.html
   pinMode(SHOCK_PIN, INPUT_PULLDOWN);
 //  rtc_gpio_deinit(SHOCK_PIN);
 //  rtc_gpio_pulldown_en(SHOCK_PIN);
 
   // wake on charger
-//  adcAttachPin(BOOT_PIN); // Removed API
   pinMode(BOOT_PIN, INPUT);
 
   // SHOCK_PIN | BOOT_PIN
@@ -67,19 +50,6 @@ void setup() {
   Serial.begin(115200, SERIAL_8N1, RX3, TX3);  // swapped -> UART3
   Serial1.begin(9600, SERIAL_8N1, RX0, TX0);   // swapped -> UART0
   Serial2.begin(115200, SERIAL_8N1, RX2, TX2);
-/*
-  // WARNING: nvs_flash_erase() wipes the entire NVS, including the Bluetooth identity keys (IR/IRK).
-  // This causes the BLE stack to generate a new IRK on every boot, so the IRK will change each time.
-  // This is intentional here to force fresh authentication for testing purposes.
-  //
-  // For production use where a stable IRK is needed (e.g. Home Assistant presence detection),
-  // remove these lines. The server's IRK will remain the same across reboots as long as NVS is intact.
-  // To clear only bond data without affecting identity keys, use esp_ble_remove_bond_device() (Bluedroid)
-  // or ble_store_util_delete_all() (NimBLE) instead.
-  Serial.println("Clearing NVS pairing data...");
-  nvs_flash_erase();
-  nvs_flash_init();
-*/
   Serial.println("Starting BLE work!");
   BLEDevice::init(SCOOTER_NAME);
 
@@ -98,7 +68,6 @@ void setup() {
    * Required in authentication process to provide displaying and/or input passkey or yes/no butttons confirmation
    */
   pServer->setCallbacks(new MySecurityCallbacks());
-//  pServer->setCallbacks(new MyServerCallbacks()); // merged into -> ble_security.ino -> MySecurityCallbacks
   BLEService *pService = pServer->createService(SERVICE_UUID);
 
   pMainCharacteristic = pService->createCharacteristic(CHARACTERISTIC_UUID_MAIN, secure_properties);
@@ -131,6 +100,21 @@ void setup() {
     and the init key means which key you can distribut to the slave. */
   BLEDevice::setSecurityInitKey(init_key);
   BLEDevice::setSecurityRespKey(rsp_key);
+#ifdef CONFIG_TAG
+  // Scan for BLE beacon
+  sscanf(BEACON_MAC, "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx", &beaconMac[0], &beaconMac[1], &beaconMac[2], &beaconMac[3], &beaconMac[4], &beaconMac[5]);
+  BLEDevice::whiteListAdd(BLEAddress(beaconMac, 0));          // add BEACON_MAC to white list
+  pBLEScan = BLEDevice::getScan();                            // Create the scan object
+  pBLEScan->setScanCallbacks(new MyScanCallbacks(), false);   // Set the callback for when devices are discovered, no duplicates
+  pBLEScan->setFilterPolicy(BLE_HCI_SCAN_FILT_USE_WL);        // apply MAC filter white list (ST17H66 only)
+  pBLEScan->setActiveScan(false);                             // passive scan
+  pBLEScan->setDuplicateFilter(false);                        // report beacon each time seen
+  pBLEScan->setInterval(199);                                 // channel switching time
+  pBLEScan->setWindow(197);                                   // channel scan time (ms)
+  pBLEScan->setMaxResults(0);                                 // Do not store the scan results, use callback only
+  pBLEScan->start(0, false, true);                            // scan forever, clear scan results, clear duplicate filter
+  beacon.rssi = -100;
+#endif
   Serial.println("Ready!");
   delay(2500);
 

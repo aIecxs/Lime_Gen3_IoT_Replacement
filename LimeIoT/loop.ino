@@ -127,4 +127,8 @@ void loop() {
     readController();
   }
   delay(10);
+#ifdef CONFIG_TAG
+  // Scan for BLE beacon
+  BLEScanTaskCode(NULL);
+#endif
 }

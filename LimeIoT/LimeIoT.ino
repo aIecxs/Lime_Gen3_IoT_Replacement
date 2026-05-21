@@ -1,13 +1,11 @@
 #include <CRC16.h>
 #include <CRC.h>
 #include <NimBLEDevice.h>
-//#include <nvs_flash.h>
 #include <esp_sleep.h>
 #include <driver/rtc_io.h>
 #include "display.h"
 
 #define SCOOTER_NAME "lme-UJEYGJA"
-//const char *UPDATER_WIFI_PASSWORD = "123456789"; // (not used)
 const uint32_t BLE_PASSWORD = 123456; // 6-digit TK BLE legacy pairing
 
 // hardware config: uncomment here if module installed
@@ -40,10 +38,11 @@ const uint32_t BLE_PASSWORD = 123456; // 6-digit TK BLE legacy pairing
 #define BCLK_PIN 26 // 27 = WeMos D32 / Pro
 #define DOUT_PIN 27 // 14 = WeMos D32 / Pro
 
-BLEServer *pServer = NULL;
-BLECharacteristic *pMainCharacteristic;
-BLECharacteristic *pSettingsCharacteristic;
-BLECharacteristic *pDebugCharacteristic;
+BLEScan *pBLEScan = nullptr;
+BLEServer *pServer = nullptr;
+BLECharacteristic *pMainCharacteristic = nullptr;
+BLECharacteristic *pSettingsCharacteristic = nullptr;
+BLECharacteristic *pDebugCharacteristic = nullptr;
 
 
 // Display Status Codes
@@ -72,12 +71,12 @@ byte lightBlinkEscByte[9] = { 0x46, 0x43, 0x16, 0x13, 0x00, 0x01, 0x06, 0xC2, 0x
 
 
 // Status
-bool beaconConnected = false;
-bool deviceConnected = false;
+volatile unsigned long lastDisconnected = 0;
+volatile bool deviceConnected = false;
 bool oldDeviceConnected = false;
 bool isDisconnected = false;
 bool commandIsSending = false;
-bool isMP3Playing = false;
+volatile bool isMP3Playing = false;
 bool isBooted = false;
 bool isIdle = false;
 uint8_t isUnlocked = 0;
@@ -91,6 +90,17 @@ byte LEDmode = 0x10;
 byte battery = 0x00;
 byte isCharging = 0x00;
 String customDisplayStatus = "";
+
+#ifdef CONFIG_TAG
+typedef struct beacon_t {
+  bool connected;
+  bool proximity;
+  bool button;
+  int rssi;
+  unsigned long time;
+} beacon_t;
+volatile beacon_t beacon;
+#endif
 
 // Set Settings
 int alarm_delay = 200;
@@ -111,59 +121,73 @@ RTC_DATA_ATTR byte lastBattery = 0x00;
 #define CHARACTERISTIC_UUID_MAIN "00c1acd4-f35b-4b5f-868d-36e5668d0929"
 #define CHARACTERISTIC_UUID_SETTINGS "7299b19e-7655-4c98-8cf1-69af4a65e982"
 #define CHARACTERISTIC_UUID_DEBUG "83ea7700-6ad7-4918-b1df-61031f95cf62"
-/*
+
 // BLE Beacon for unlocking - paste your ServiceUUID here
 #define BEACON_SERVICE_UUID "0000ffe0-0000-1000-8000-00805f9b34fb"
+#define BEACON_MAC "ff:ff:12:a3:e7:16" // paste your MAC here
+uint8_t beaconMac[6];
 
-TaskHandle_t BLEScanTask;
-
+#ifdef CONFIG_TAG
 void BLEScanTaskCode(void *pvParameters) {
-  vTaskDelay(5000 / portTICK_PERIOD_MS);
-  BLEScan* pBLEScan = BLEDevice::getScan(); // Create a scan object
-  pBLEScan->setActiveScan(true);            // Active scan
-  pBLEScan->setInterval(100);               // Set scan interval
-  pBLEScan->setWindow(99);                  // Set scan window
-
-  while (true) {
-    BLEScanResults *foundDevices = pBLEScan->start(5, false); // Scan for 5 seconds
-    for (int i = 0; i < foundDevices->getCount(); i++) {
-      BLEAdvertisedDevice device = foundDevices->getDevice(i);
-      if (device.haveServiceUUID() && device.getServiceUUID().equals(BLEUUID(BEACON_SERVICE_UUID))) {
-        Serial.print("BLE Beacon connected. ServiceUUID: ");
-        Serial.println(BEACON_SERVICE_UUID);
-        if (!beaconConnected) {
-          beaconConnected = true;
-          commandIsSending = true;
+  if (!deviceConnected && millis() - lastDisconnected > 2000) {
+    lastDisconnected = millis(); 
+    if (!pBLEScan->isScanning()) {
+      pBLEScan->start(0, false, true);
+    }
+  }
+  if (beacon.connected) {
+    beacon.connected = false;
+    if (beacon.rssi > -70) {
+      if (!beacon.proximity) {
+        if (!deviceConnected) {
+          deviceConnected = true;
+          Serial.printf("BLE Beacon connected. RSSI: %d\n", beacon.rssi);
+          playMP3("/connected.mp3");
+          delay(100);
+        }
+        beacon.proximity = true;
+      }
+    } else {
+      beacon.proximity = false;
+    }
+    if (millis() - beacon.time < 1000) {
+      if (!beacon.button) {
+        beacon.button = true;
+        deviceConnected = true;
+        if (!isUnlocked) {
+          Serial.println("BLE Beacon: Unlock Scooter");
           playMP3("/unlock.mp3");
           delay(100);
-          unlockForEver = 1;
           unlockScooter();
-          commandIsSending = false;
         }
-        unlockForEver = 1;
-        break;
-      } else if (beaconConnected) {
-          unlockForEver = 0;        
-        }
+      }
+    } else {
+      beacon.button = false;
     }
-    delay(100);
+    beacon.time = millis();
+  }
+  if (millis() - beacon.time > 5000) {
+    if (beacon.proximity && beacon.button) {
+      beacon.proximity = false;
+      beacon.button = false;
+      beacon.time += 2000UL;
+      if (isUnlocked) {
+        Serial.println("BLE Beacon: Lock Scooter");
+        playMP3("/lock.mp3");
+        delay(100);
+        unlockForEver = 0;
+        lockScooter();
+      }
+    } else if (beacon.rssi > -100) {
+        beacon.rssi = -100;
+        deviceConnected = false;
+      }
   }
 }
-*/
+#endif
+
 // Display Task
 TaskHandle_t UARTTask;
-
-/* // merged into -> ble_security.ino -> MySecurityCallbacks
-class MyServerCallbacks : public BLEServerCallbacks {
-  void onConnect(BLEServer *pServer) {
-    deviceConnected = true;
-  };
-
-  void onDisconnect(BLEServer *pServer) {
-    deviceConnected = false;
-  }
-};
-*/
 
 // UARTTaskCode: read controller and send command to display every 300ms
 void UARTTaskCode(void *pvParameters) {

@@ -1,28 +1,31 @@
 void unlockBeeb() {
+#ifndef CONFIG_I2S
   tone(BUZZER_PIN, 400, 100);
   delay(100);
   tone(BUZZER_PIN, 500, 100);
   delay(100);
   noTone(BUZZER_PIN);
-/*
+#else
   beep(400, 100);
   beep(500, 100);
-*/
+#endif
 }
 
 void lockBeeb() {
+#ifndef CONFIG_I2S
   tone(BUZZER_PIN, 500, 100);
   delay(100);
   tone(BUZZER_PIN, 400, 100);
   delay(100);
   noTone(BUZZER_PIN);
-/*
+#else
   beep(500, 100);
   beep(400, 100);
-*/
+#endif
 }
 
 void connectedBeeb() {
+#ifndef CONFIG_I2S
   tone(BUZZER_PIN, 300, 100);
   delay(100);
   tone(BUZZER_PIN, 400, 100);
@@ -30,17 +33,20 @@ void connectedBeeb() {
   tone(BUZZER_PIN, 500, 100);
   delay(100);
   noTone(BUZZER_PIN);
-/*
+#else
   beep(300, 100);
   beep(400, 100);
   beep(500, 100);
-*/
+#endif
 }
 
 void disconnectedBeeb() {
+#ifndef CONFIG_I2S
   tone(BUZZER_PIN, 300, 100);
   delay(100);
-//  beep(300, 100);
+#else
+  beep(300, 100);
+#endif
 }
 
 void alarmBeeb() {

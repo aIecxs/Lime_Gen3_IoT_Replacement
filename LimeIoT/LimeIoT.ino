@@ -10,6 +10,13 @@
 //const char *UPDATER_WIFI_PASSWORD = "123456789"; // (not used)
 const uint32_t BLE_PASSWORD = 123456; // 6-digit TK BLE legacy pairing
 
+// hardware config: uncomment here if module installed
+//#define CONFIG_I2S // MAX98357A Audio I2S Output
+//#define CONFIG_IMU // SW-420 tilt sensor
+//#define CONFIG_PSM // MP4560 DC-DC Converter with EN (Enable) Pin (power-saving mode)
+//#define CONFIG_PNP // Display has pnp transistor (inverted Pin)
+//#define CONFIG_TAG // ST17H66 BLE Beacon unlocking allowed
+
 // Set pins
 #define LED_BUILTIN 2
 #define TX0 1  // UART0 - Controller
@@ -93,8 +100,11 @@ int max_speed = 28;
 RTC_DATA_ATTR byte alarm_cnt = 0;
 RTC_DATA_ATTR byte lastBattery = 0x00;
 
-//#define BUTTON_PIN_BITMASK ((1ULL << SHOCK_PIN) | (1ULL << BOOT_PIN))
+#ifndef CONFIG_IMU
 #define BUTTON_PIN_BITMASK (1ULL << BOOT_PIN)
+#else
+#define BUTTON_PIN_BITMASK ((1ULL << SHOCK_PIN) | (1ULL << BOOT_PIN))
+#endif
 
 // BLE
 #define SERVICE_UUID "653bb0e0-1d85-46b0-9742-3b408f4cb83f"

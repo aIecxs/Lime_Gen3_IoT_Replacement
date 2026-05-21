@@ -10,20 +10,25 @@ const unsigned short lockTimer = 3 * 60 ; // 3 minutes
 
 void loop() {
   unsigned long currentTime = millis() / 1000;
-/*
+
+#ifdef CONFIG_IMU
   // If more than 3 hours have passed, go to deep sleep
   if ((currentTime - lastOnTime) > sleepTimer) {
     lockScooter();
     turnOffController();
+  #ifdef CONFIG_PNP
     digitalWrite(DISPLAY_PIN, HIGH);
-//    digitalWrite(DISPLAY_PIN, LOW);
+  #else
+    digitalWrite(DISPLAY_PIN, LOW);
+  #endif
     // wait for BOOT_PIN state was updated
     if (!isBooted || (currentTime - lastOnTime) > sleepTimer + 30) {
       lastOnTime = currentTime;
       esp_deep_sleep_start();
     }
   }
-*/
+#endif
+
   if (isUnlocked || isCharging) {
     lastOnTime = currentTime;
   }
@@ -31,25 +36,36 @@ void loop() {
   if (isDisconnected && (currentTime - lastConnected) > lockTimer && (currentTime - lastOnTime) > lockTimer) {
     isDisconnected = false;
   }
-/*
+
   // wake on shock sensor
+#ifdef CONFIG_IMU
+  #ifndef CONFIG_PSM
   if (digitalRead(SHOCK_PIN) == HIGH && !alarmIsOn && battery && !deviceConnected && !isDisconnected && !isUnlocked && !unlockForEver) {
-//  if (analogReadMilliVolts(SHOCK_PIN) > 700 && !alarmIsOn && battery && !deviceConnected && !isDisconnected && !isUnlocked && !unlockForEver) {
+  #else
+  if (analogReadMilliVolts(SHOCK_PIN) > 700 && !alarmIsOn && battery && !deviceConnected && !isDisconnected && !isUnlocked && !unlockForEver) {
+  #endif
+  #ifdef CONFIG_PNP
     digitalWrite(DISPLAY_PIN, LOW);
-//    digitalWrite(DISPLAY_PIN, HIGH);
+  #else
+    digitalWrite(DISPLAY_PIN, HIGH);
+  #endif
     alarmBeeb();
     alarm_cnt++; // avoid disorderly conduct in night mode
     currentTime = millis() / 1000;
     lastOnTime = currentTime;
     isIdle = false;
   }
-*/
+#endif
+
   // wake on charger (decrease idle time with pull-down resistor)
   getPin(BOOT_PIN, &isBooted, 5);
   if (isBooted || (currentTime % 80000 == 0)) {
     if (!controllerIsOn && !isIdle) { // update battery once a day
+#ifdef CONFIG_PNP
       digitalWrite(DISPLAY_PIN, LOW);
-//      digitalWrite(DISPLAY_PIN, HIGH);
+#else
+      digitalWrite(DISPLAY_PIN, HIGH);
+#endif
       lastOnTime = currentTime;
       turnOnController();
     }
@@ -110,4 +126,5 @@ void loop() {
   if (controllerIsOn || isUnlocked) {
     readController();
   }
+  delay(10);
 }

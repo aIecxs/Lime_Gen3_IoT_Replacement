@@ -31,8 +31,11 @@ void setup() {
   // Display LOW = off, HIGH = on for npn transistor
   // Display LOW = on, HIGH = off for pnp transistor
   pinMode(DISPLAY_PIN, OUTPUT);
+#ifdef CONFIG_PNP
   digitalWrite(DISPLAY_PIN, LOW);
-//  digitalWrite(DISPLAY_PIN, HIGH);
+#else
+  digitalWrite(DISPLAY_PIN, HIGH);
+#endif
 //  gpio_hold_en(DISPLAY_PIN);
 /*
   //Setup sleep wakeup on Touch Pad 3 ( GPIO15 )
@@ -58,7 +61,7 @@ void setup() {
   |--------------|-------|---------------|--|--|--|--|--|
   ^              ^       ^               ^     ^
   Sketch    OTA update   File system   EEPROM  WiFi config (SDK) */
-  LittleFS.begin();
+  LittleFS.begin(true);
 
   // do not print any debug messages on controller to reduce noise
   Serial.begin(115200, SERIAL_8N1, RX3, TX3);  // swapped -> UART3
@@ -129,9 +132,10 @@ void setup() {
   BLEDevice::setSecurityInitKey(init_key);
   BLEDevice::setSecurityRespKey(rsp_key);
   Serial.println("Ready!");
+  delay(2500);
 
   // Play ready sound
-  delay(2500);
+#ifndef CONFIG_I2S
   tone(BUZZER_PIN, 300, 100);
   delay(100);
   tone(BUZZER_PIN, 400, 100);
@@ -139,11 +143,12 @@ void setup() {
   tone(BUZZER_PIN, 500, 100);
   delay(100);
   noTone(BUZZER_PIN);
-/*
+#else
   beep(300, 100);
   beep(400, 100);
   beep(500, 100);
-*/
+#endif
+
   // disable AudioLogger
   Print* audioLogger = &silencedLogger;
 

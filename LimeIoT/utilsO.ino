@@ -50,9 +50,11 @@ void getPin(gpio_num_t pin, bool* state, const unsigned long dur) {
   else {
     lastRead = cur;
   }
-  
+#ifndef CONFIG_PSM
   if (digitalRead(pin) == HIGH) {
-//  if (analogReadMilliVolts(pin) > 700) {
+#else
+  if (analogReadMilliVolts(pin) > 700) {
+#endif
     if (!high) {
       lastHigh = cur;
       high = true;

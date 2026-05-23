@@ -73,7 +73,7 @@ The command sent by the controller to the IoT consists of 42 bytes. The 9th byte
 | Byte number | Meaning |
 |--|--|
 | 9 | Speed |
-| 20 | Batttery |
+| 20 | Battery |
 | last two bytes | CRC-16/XMODEM checksum |
 
 #### Example: `46 58 0C FF 00 22 11 00 00 40 00 00 41 3F 60 42 00 FF 44 64 52 00 61 F1 80 00 00 72 01 5C 01 59 82 00 00 00 00 E0 00 00 0A B3`
@@ -131,3 +131,30 @@ You can turn off the red LED with the following command: `4C 42 44 43 50 01 10 1
 | 11 | blink |
 
 LED byte has two bits = bit for blink + bit for power
+
+
+## Hardware configuration flags
+
+#### The following `#define` flags are used to select the hardware features:
+
+| Flag | Module | meaning |
+| --- | --- | --- |
+| `CONFIG_I2S` | MAX98357A | Adafruit I2S Amplifier installed |
+| `CONFIG_IMU` | SW-420 | Tilt sensor wakeup/input installed |
+| `CONFIG_PSM` | MP4560 | DC-DC Converter with EN (Enable) Pin (power-saving mode) |
+| `CONFIG_PNP` | | Display has pnp transistor (inverted Pin) |
+| `CONFIG_TAG` | ST17H66 | BLE Beacon unlocking allowed |
+
+= = = > > > [ESP32_Manual.pdf](https://web.archive.org/web/2024/scootertalk.org/forum/viewtopic.php?t=5474&start=190) < < < = = =
+
+### PCB Board Power Configuration
+| | Case 0<br>(No PCB) | Case A<br>(Sleep, DC-DC ON) | Case B<br>(PSM, DC-DC OFF) |
+| --- | --- | --- | --- |
+| `CONFIG_IMU`<br>`CONFIG_PSM`<br>`CONFIG_PNP` | disabled<br>disabled<br>disabled | enabled<br>disabled<br>enabled | enabled<br>enabled<br>disabled |
+| Wake Sources<br>Display/EN<br>Power (idle) | None<br>Always ON<br>~300mA | Digital I/O<br>RTC Hold ON<br>~20mA | ADC<br>OFF (cuts power)<br><1mA |
+
+**BLE Beacon note:**
+
+If you want the BLE Beacon unlock feature, you must use some keyfinder with a static, non-randomized MAC address such as the ST17H66. You need to discover the MAC address yourself (for example with NimBLE-Arduino -> [BLE_Beacon_Scanner](https://github.com/h2zero/NimBLE-Arduino/blob/master/examples/BLE_Beacon_Scanner/BLE_Beacon_Scanner.ino) sketch) and configure it in the code. Enable `CONFIG_TAG`, edit the beacon MAC and ServiceUUID in [LimeIoT.ino](../../tree/2.3.x/LimeIoT/LimeIoT.ino#L129). Short press unlocks the scooter. Holding BLE Beacon near the green box + long press will lock the Scooter immediately. If BLE Beacon is out of distance the timeout will lock Scooter after 3 minutes.
+
+<img width="350" height="200" alt="ST17H66" src="https://github.com/user-attachments/assets/ed1fc262-d844-4df6-aea6-11bcc4f64b03" />

@@ -93,6 +93,7 @@ byte battery = 0x00;
 byte isCharging = 0x00;
 String customDisplayStatus = "";
 volatile bool isUpgrading = false;
+volatile float upgradingProgress = 0.0;
 
 #ifdef CONFIG_TAG
 typedef struct beacon_t {
@@ -205,6 +206,7 @@ void UARTTaskCode(void *pvParameters) {
         sendDisplayLED(red, blink);
         delay(300);
       }
+      speed = ((int)upgradingProgress * 256 + 5) / 10;
       sendDisplayCommand(speed, battery, customDisplayStatus != "" ? customDisplayStatus : DISPLAY_STATUS_UPGRADING);
     } else if (isUnlocked) {
       if (LEDmode != 0x03 && !alarmIsOn) {

@@ -1,3 +1,4 @@
+unsigned long timeMs = 0;
 unsigned long prevMillis = 0;
 const long linterval = 250;
 
@@ -59,7 +60,7 @@ void loop() {
   }
   // keep prevShockState true while shockState remains HIGH so a stuck input
   // doesn't produce repeated rising-edge events; only clear when pin goes LOW
-  if (!shockState) prevShockState = shockState;
+  prevShockState = shockState;
 #endif
 
   // wake on charger (decrease idle time with pull-down resistor)
@@ -131,7 +132,13 @@ void loop() {
   if (controllerIsOn || isUnlocked) {
     readController();
   }
-  BLEOTA.process();
+  if ( currMillis - timeMs > 1000 ) {
+    timeMs = currMillis;
+    BLEOTA.process();
+    if (isUpgrading) {
+      upgradingProgress = BLEOTA.progress();
+    }
+  }
   delay(10);
 #ifdef CONFIG_TAG
   // Scan for BLE beacon

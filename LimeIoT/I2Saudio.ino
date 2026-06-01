@@ -1,14 +1,17 @@
 #include <AudioFileSourceLittleFS.h>
 #include <AudioGeneratorMP3.h>
+#include <AudioOutputInternalDAC.h>
 #include <AudioOutputI2S.h>
 #include <AudioLogger.h>
 
 /* Requirements:
  *
- * http://github.com/lorol/arduino-esp32fs-plugin/releases download esp32fs.zip
- *  ~/Arduino/tools/ESP32FS/tool/esp32fs.jar               <-   place file here
+ * http://github.com/earlephilhower/arduino-littlefs-upload/releases
+ * Assets -> arduino-littlefs-upload.vsix
+ *  ~/.arduinoIDE/plugins                <- create folder + place VSIX file here
  * goto "Sketch" -> "Show Sketch Folder" -> create directory "data" -> file "example.mp3"
- * Use the "Tools" -> "ESP32 Sketch Data Upload" menu to upload the MP3 files to LittleFS
+ * Restart the IDE. Press [Ctrl] + [Shift] + [P] to open the Command Palette
+ * type "Upload Little FS to Pico/ESP8266/ESP32" to upload the MP3 files to LittleFS
  *
  * http://github.com/earlephilhower/ESP8266Audio
  * "Tools" -> "Manage Libraries..." -> "ESP8266Audio"
@@ -16,7 +19,12 @@
 
 AudioFileSourceLittleFS *file;
 AudioGeneratorMP3 *mp3;
+
+#ifndef CONFIG_I2S
+AudioOutputInternalDAC *out;
+#else
 AudioOutputI2S *out;
+#endif
 
 TaskHandle_t mp3Task;
 
@@ -41,7 +49,7 @@ void playMP3Task(void *pvParameters) {
 void playMP3(const char *mp3File) {
   if (!isMP3Playing) {
 #ifndef CONFIG_I2S
-    out = new AudioOutputI2S(0, 1);   // built-in DAC
+    out = new AudioOutputInternalDAC(); // built-in DAC
 #else
     out = new AudioOutputI2S();       // MAX98357A I2S
     out->SetPinout(BCLK_PIN, WCLK_PIN, DOUT_PIN);
@@ -61,7 +69,7 @@ void playMP3(const char *mp3File) {
 
 void beep(int freq, unsigned int duration) {
 #ifndef CONFIG_I2S
-  out = new AudioOutputI2S(0, 1);   // built-in DAC
+  out = new AudioOutputInternalDAC(); // built-in DAC
 #else
   out = new AudioOutputI2S();       // MAX98357A I2S
   out->SetPinout(BCLK_PIN, WCLK_PIN, DOUT_PIN);

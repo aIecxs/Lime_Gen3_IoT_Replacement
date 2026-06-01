@@ -41,6 +41,7 @@ void turnOffController() {
   isIdle = true;
 }
 
+//todo: ESP.restart(); as per workaround
 
 /**
  * @brief Debounces an analog GPIO input.

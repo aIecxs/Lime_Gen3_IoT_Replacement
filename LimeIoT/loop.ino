@@ -10,6 +10,7 @@ const unsigned short lockTimer = 3 * 60 ; // 3 minutes
 
 // debounce GPIO input
 getPin bootPin(BOOT_PIN, 700); // mV = HIGH
+getPin shockPin(SHOCK_PIN, 700); // mV = HIGH
 
 void loop() {
   unsigned long currentTime = millis() / 1000;
@@ -21,6 +22,7 @@ void loop() {
     turnOffController();
   #ifdef CONFIG_PNP
     digitalWrite(DISPLAY_PIN, HIGH);
+    rtc_gpio_set_level(DISPLAY_PIN, HIGH);
   #else
     digitalWrite(DISPLAY_PIN, LOW);
   #endif
@@ -42,11 +44,8 @@ void loop() {
 
   // wake on shock sensor
 #ifdef CONFIG_IMU
-  #ifndef CONFIG_PSM
-  if (digitalRead(SHOCK_PIN) == HIGH && !alarmIsOn && battery && !deviceConnected && !isDisconnected && !isUnlocked && !unlockForEver) {
-  #else
-  if (analogReadMilliVolts(SHOCK_PIN) > 700 && !alarmIsOn && battery && !deviceConnected && !isDisconnected && !isUnlocked && !unlockForEver) {
-  #endif
+  shockPin.get(&shockState, 10); // 10 ms debounce
+  if (shockState && !prevShockState && !alarmIsOn && battery && !deviceConnected && !isDisconnected && !isUnlocked && !unlockForEver) {
   #ifdef CONFIG_PNP
     digitalWrite(DISPLAY_PIN, LOW);
   #else
@@ -58,6 +57,9 @@ void loop() {
     lastOnTime = currentTime;
     isIdle = false;
   }
+  // keep prevShockState true while shockState remains HIGH so a stuck input
+  // doesn't produce repeated rising-edge events; only clear when pin goes LOW
+  if (!shockState) prevShockState = shockState;
 #endif
 
   // wake on charger (decrease idle time with pull-down resistor)
@@ -129,6 +131,7 @@ void loop() {
   if (controllerIsOn || isUnlocked) {
     readController();
   }
+  BLEOTA.process();
   delay(10);
 #ifdef CONFIG_TAG
   // Scan for BLE beacon

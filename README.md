@@ -16,6 +16,8 @@ Install ESP32 LittleFS Uploader add-on for Arduino IDE. [Here is a tutorial](htt
 
 Install the [NimBLE-Arduino](https://github.com/h2zero/NimBLE-Arduino) library by h2zero from the library manager.
 
+Install the [BLEOTA](https://github.com/gb88/BLEOTA) library by gb88 from the library manager (or install the modified fork, see [Over-The-Air updates](README.md#over-the-air-updates))
+
 Install the [crc](https://github.com/RobTillaart/CRC) library by robtillaart from the library manager.
 
 Install the [ESP8266Audio](https://github.com/earlephilhower/ESP8266Audio) library by earlephilhower.
@@ -64,6 +66,38 @@ If you dont want/can use the app, you can just download a bluetooth terminal app
 | `lock`    | Turns off the controller |
 | `unlockforever`    | Keeps the scooter unlocked when disconnecting |
 | `alarm`   | let the scooter beeb (if speaker is connected ) |
+
+## Over-The-Air updates
+
+You can update the ESP32 Over-The-Air with Chrome or Edge Web App.
+
+-> visit [https://gb88.github.io/BLEOTA](https://gb88.github.io/BLEOTA)  
+- connect BLE Device  
+- select file `'LimeIoT-ota_esp32-signed.bin'`  
+
+#### Creating Over-The-Air updates
+
+For NimBLE-Arduino on board platform esp32 by Espressif Systems version v3.3.8  
+you may use that modified fork instead of the original BLEOTA Library  
+**Credits:** [@gb88](https://buymeacoffee.com/gb88)
+ 
+[github.com/aIecxs/BLEOTA/tree/nimble](https://github.com/aIecxs/BLEOTA/tree/nimble) -> download zip file ->  
+[github.com/aIecxs/BLEOTA/archive/refs/heads/nimble.zip](https://github.com/aIecxs/BLEOTA/archive/refs/heads/nimble.zip)
+
+Install the Library in Arduino IDE 2 -> Menu ->  
+Sketch -> Include Library -> Add .ZIP Library... -> [BLEOTA-nimble.zip](https://github.com/aIecxs/BLEOTA/archive/refs/heads/nimble.zip)
+
+Install [Git for Windows](https://git-scm.com)
+
+- compile the arduino code from [LimeIoT](../../tree/2.3.x/LimeIoT) folder at least once  
+- place your own `priv_key.pem` / `rsa_key.pub` key pair into sketch `'data'` folder  
+- copy the [make_ota.sh](https://github.com/aIecxs/BLEOTA/tree/nimble/tools) file into sketch folder  
+- run the `$ ./make_ota.sh` bash script from Git Bash -> hit `ESC` to sign with your own keys
+
+Flash the `'LimeIoT-ota_esp32-signed.bin'` file via BLEOTA Web App.  
+Flash the `'LimeIoT-littlefs_esp32-signed.bin'` file via BLEOTA Web App.
+
+**Note:** With no RSA key pair files given in sketch `'data'` folder, you can sign with random auto generated RSA keys from ESP32 memory dump instead. But it is recommended to keep the (known) RSA keys published with this GitHub Repo. The Signature is used for file validation only. BLE Bluetooth connection still remains secured against unauthorized access with 6-digit `BLE_PASSWORD`.
 
 ## Controller Communication
 To unlock the controller, supply 3.3V to the blue wire connected to the IoT and send the command `464316610001F1F28F` to power it on. Once powered on, send the heartbeat `4643110100084C494D4542494B45BE8A` every 500ms. To power off the controller, cut the 3.3V supply and send the command `464316610001F0E2AE`. The baudrate for all commands is `9600`.

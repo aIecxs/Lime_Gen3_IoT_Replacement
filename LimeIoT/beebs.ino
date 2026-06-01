@@ -49,7 +49,11 @@ void disconnectedBeeb() {
 #endif
 }
 
-void alarmBeeb() {
+
+TaskHandle_t alarmTask;
+
+// Run alarmBeeb in a separate low-priority FreeRTOS task to avoid blocking loop
+void alarmBeebTask(void* pvParameters) {
   alarmIsOn = 1;
   if (!controllerIsOn) {
     turnOnController();
@@ -77,6 +81,24 @@ void alarmBeeb() {
       sendDisplayLED(red, off);
       delay(alarm_delay);
     }
-  } else delay((4UL * alarm_delay * alarm_reps) + 1000); // debounce GPIO input
+  } else {
+    delay((4UL * alarm_delay * alarm_reps) + 1000); // debounce GPIO input
+  }
   alarmIsOn = 0;
+  alarmTask = NULL;
+  vTaskDelete(NULL);
+}
+
+// create a low-priority task to run the alarm
+void alarmBeeb() {
+  if (!alarmIsOn) {
+    xTaskCreatePinnedToCore(
+    alarmBeebTask, // Task function.
+    "alarmBeeb",   // name of task.
+    4096,          // Stack size of task
+    NULL,          // parameter of the task
+    1,             // priority of the task
+    &alarmTask,    // Task handle to keep track of created task
+    1);            // pin task to core 1
+  }
 }

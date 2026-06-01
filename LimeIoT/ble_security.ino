@@ -13,7 +13,10 @@ class MySecurityCallbacks : public BLEServerCallbacks {
 
   void onConnect(BLEServer *pServer, NimBLEConnInfo& connInfo) {
     deviceConnected = true;
-    pBLEScan->stop();
+    if (pBLEScan) {
+      pBLEScan->stop();
+    }
+    pServer->updateConnParams(connInfo.getConnHandle(), 0x06, 0x12, 0, 2000);
     BLEDevice::startSecurity(connInfo.getConnHandle());
   };
 

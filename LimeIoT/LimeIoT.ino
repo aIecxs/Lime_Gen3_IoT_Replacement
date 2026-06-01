@@ -84,12 +84,15 @@ uint8_t controllerIsOn = 0;
 uint8_t lightIsOn = 0;
 uint8_t unlockForEver = 0;
 int speed = 0;
-uint8_t alarmIsOn = 0;
+volatile uint8_t alarmIsOn = 0;
+bool shockState = false;
+bool prevShockState = false;
 uint8_t throttle = 1;
 byte LEDmode = 0x10;
 byte battery = 0x00;
 byte isCharging = 0x00;
 String customDisplayStatus = "";
+volatile bool isUpgrading = false;
 
 #ifdef CONFIG_TAG
 typedef struct beacon_t {
@@ -107,7 +110,7 @@ int alarm_delay = 200;
 int alarm_freq = 3000;
 int alarm_reps = 15;
 int max_speed = 28;
-RTC_DATA_ATTR byte alarm_cnt = 0;
+RTC_DATA_ATTR volatile byte alarm_cnt = 0;
 RTC_DATA_ATTR byte lastBattery = 0x00;
 
 #ifndef CONFIG_IMU
@@ -196,7 +199,14 @@ void UARTTaskCode(void *pvParameters) {
     if (millis() > 600000000) {
       ESP.restart();
     }
-    if (isUnlocked) {
+    if (isUpgrading) {
+      if (LEDmode != 0x30 && !alarmIsOn) {
+        LEDmode = (LEDmode == 0xF0) ? 0x30 : 0xF0;
+        sendDisplayLED(red, blink);
+        delay(300);
+      }
+      sendDisplayCommand(speed, battery, customDisplayStatus != "" ? customDisplayStatus : DISPLAY_STATUS_UPGRADING);
+    } else if (isUnlocked) {
       if (LEDmode != 0x03 && !alarmIsOn) {
         LEDmode = (LEDmode == 0xC3) ? 0x03 : 0xC3;
         sendDisplayLED(green, blink);

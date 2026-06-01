@@ -23,15 +23,21 @@ void setup() {
   pinMode(DISPLAY_PIN, OUTPUT);
 #ifdef CONFIG_PNP
   digitalWrite(DISPLAY_PIN, LOW);
+//  rtc_gpio_deinit(DISPLAY_PIN); // (not a RTC GPIO)
+//  rtc_gpio_hold_en(DISPLAY_PIN);
 #else
   digitalWrite(DISPLAY_PIN, HIGH);
 #endif
-//  gpio_hold_en(DISPLAY_PIN);
 
   // wake on shock sensor
+#ifndef CONFIG_PSM
   pinMode(SHOCK_PIN, INPUT_PULLDOWN);
-//  rtc_gpio_deinit(SHOCK_PIN);
-//  rtc_gpio_pulldown_en(SHOCK_PIN);
+#else
+  adcAttachPin(SHOCK_PIN);
+  rtc_gpio_deinit(SHOCK_PIN);
+  rtc_gpio_set_direction(SHOCK_PIN, RTC_GPIO_MODE_INPUT_ONLY);
+  rtc_gpio_pulldown_en(SHOCK_PIN);
+#endif
 
   // wake on charger
 #ifndef CONFIG_PSM
@@ -41,8 +47,11 @@ void setup() {
 #endif
 
   // SHOCK_PIN | BOOT_PIN
-//  esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_ON);
+#ifdef CONFIG_PNP
+  esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_ON);
+#endif
   esp_sleep_enable_ext1_wakeup(BUTTON_PIN_BITMASK,ESP_EXT1_WAKEUP_ANY_HIGH);
+
 
   /* SPI flash file system
   |--------------|-------|---------------|--|--|--|--|--|
@@ -85,12 +94,20 @@ void setup() {
   pSettingsCharacteristic = pService->createCharacteristic(CHARACTERISTIC_UUID_SETTINGS, secure_properties);
   pSettingsCharacteristic->setCallbacks(new SettingsBLECallback());
 
+  // Add the public key (rsa_key.pub content)
+  generateKeys();
+  pub_key = loadPemFromLittleFS(pubKeyFile);
+  // Add OTA Service with security
+  if (pub_key) {
+    initBLEOTA();
+  }
   pServer->advertiseOnDisconnect(true);
   pService->start();
   BLEAdvertising *pAdvertising = pServer->getAdvertising();
   pAdvertising->addServiceUUID(SERVICE_UUID);
-  pAdvertising->setName(SCOOTER_NAME);
+  pAdvertising->addServiceUUID(BLEOTA.getBLEOTAuuid());
   pAdvertising->enableScanResponse(true);
+  pAdvertising->setName(SCOOTER_NAME);
   pAdvertising->start();
   BLEDevice::setMTU(BLE_ATT_MTU_MAX);
   BLEDevice::setSecurityAuth(true, true, true);               // bonding with peer device after authentication
@@ -143,3 +160,12 @@ void setup() {
   LEDmode = 0x10;
   turnOnController();
 }
+
+
+// check for insufficient hardware configuration
+#if defined(CONFIG_PSM) && defined(CONFIG_PNP)
+  #error "Error: CONFIG_PSM, CONFIG_PNP: Use DISPLAY_PIN = EN (Enable) Pin to control either Display or DC-DC Converter."
+#endif
+#if (defined(CONFIG_PSM) || defined(CONFIG_PNP)) && !defined(CONFIG_IMU)
+  #error "Error: CONFIG_IMU: Use SHOCK_PIN as wakeup source to wake up from Sleep Mode."
+#endif

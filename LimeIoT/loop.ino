@@ -3,7 +3,7 @@ unsigned long prevMillis = 0;
 const long linterval = 250;
 
 unsigned long lastOnTime = 0;
-const unsigned short sleepTimer = 3 * 60 * 60; // 3 hours
+const unsigned short sleepTimer = 1 * 60 * 60; // 1 hours
 
 // inhibit driving without hearthbeat timeout
 unsigned long lastConnected = 0;
@@ -17,7 +17,7 @@ void loop() {
   unsigned long currentTime = millis() / 1000;
 
 #ifdef CONFIG_IMU
-  // If more than 3 hours have passed, go to deep sleep
+  // If more than 1 hours have passed, go to deep sleep
   if ((currentTime - lastOnTime) > sleepTimer) {
     lockScooter();
     turnOffController();
@@ -98,7 +98,7 @@ void loop() {
     prevMillis = currMillis;  // update prevMillis with current time
 
     if (deviceConnected) {
-      pSettingsCharacteristic->setValue(settingsByte, sizeof(txByte));
+      pSettingsCharacteristic->setValue(settingsByte, sizeof(settingsByte));
       pMainCharacteristic->setValue(txByte, sizeof(txByte));
       pMainCharacteristic->notify();
     } else if (isUnlocked && !unlockForEver && (currentTime - lastConnected > lockTimer)) {

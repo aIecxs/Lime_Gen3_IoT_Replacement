@@ -70,7 +70,7 @@
 
 #define MODEL "Lime-S Gen3.0"
 //#define SERIAL_NUM
-#define FW_VERSION "1.0.0"
+#define FW_VERSION "1.0.1"
 #define HW_VERSION "LSW6G-Lime2.0-181117RC"
 #define MANUFACTURER "Espressif"
 

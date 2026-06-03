@@ -237,9 +237,9 @@ void UARTTaskCode(void *pvParameters) {
         }
         sendDisplayCommand(speed, battery != 0x00 ? battery : lastBattery, customDisplayStatus != "" ? customDisplayStatus : DISPLAY_STATUS_LOCKED);
       } else {
-          if (LEDmode != 0x01 && !alarmIsOn) {
-            LEDmode = (LEDmode == 0xC1) ? 0x01 : 0xC1;
-            sendDisplayLED(green, on);
+          if (LEDmode != 0x00 && !alarmIsOn) {
+            LEDmode = (LEDmode == 0xC0) ? 0x00 : 0xC0;
+            sendDisplayLED(green, off);
             delay(300);
         }
         sendDisplayCommand(speed, battery != 0x00 ? battery : lastBattery, customDisplayStatus != "" ? customDisplayStatus : DISPLAY_STATUS_SCAN);
